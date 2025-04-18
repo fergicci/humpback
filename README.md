@@ -4,8 +4,6 @@
 
 **Humpback Studio** is a dynamic web application designed to showcase and manage a home recording studio environment. It includes a frontend built with **React.js**, a backend using **Java with Spring Boot**, and deployment on **Amazon Web Services (AWS)**.
 
----
-
 ## 2. Functional Requirements
 
 - Interactive landing page
@@ -14,8 +12,6 @@
 - Media gallery
 - Admin interface (optional, future)
 - API for content and control
-
----
 
 ## 3. System Architecture
 
@@ -27,8 +23,6 @@
 
 📌 _Architecture diagram will be added here._
 
----
-
 ## 4. Folder Structure
 
 ```
@@ -39,17 +33,13 @@
 └── README.md
 ```
 
----
-
 ## 5. Development Workflow
 
 - `main`: stable, production-ready
 - `develop`: integration branch for feature work
-- `feature/*`: short-lived branches off `develop`
+- `<developer-initials>/<feature-id>`: short-lived branches off `develop`
 - All changes go through **pull requests**
 - Code review and approval process enforced via GitHub branch rules
-
----
 
 ## 6. Backend Design
 
@@ -60,8 +50,6 @@
 - **Database:** (TBD) PostgreSQL or another AWS-compatible solution
 - **Security:** Spring Security + JWT/OAuth2 (planned)
 
----
-
 ## 7. Frontend Design
 
 - **Framework:** React.js (Vite or CRA)
@@ -70,8 +58,6 @@
 - **UI Library:** (TBD: Material UI / Tailwind / Custom)
 - **API Integration:** Axios or Fetch
 
----
-
 ## 8. Deployment Strategy
 
 - **Frontend:** AWS S3 + CloudFront
@@ -79,15 +65,11 @@
 - **DNS:** Route53 (already set up)
 - **Secrets:** Environment variables, `.env`, and AWS Secrets Manager (planned)
 
----
-
 ## 9. Testing Strategy
 
-- **Backend:** JUnit & MockMVC
+- **Backend:** JUnit
 - **Frontend:** Jest, React Testing Library (TBD)
 - **CI Integration:** GitHub Actions for test automation (future milestone)
-
----
 
 ## 10. Roadmap & Milestones
 
@@ -99,11 +81,8 @@
 - ⏳ Media & contact feature
 - ⏳ Admin interface (optional)
 
----
-
 ## 11. Contributors & Code Ownership
 
 - **@fergicci** – Project Owner, Architect, and Developer  
-  _(Defined in `.github/CODEOWNERS`)_
 
 Contribution guidelines and issue templates will be added as the project grows.
