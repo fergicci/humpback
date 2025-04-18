@@ -1,0 +1,6 @@
+# Set default code owner for everything
+* @fergicci
+
+# Specific ownership for folders
+/backend/ @fergicci
+/frontend/ @fergicci
