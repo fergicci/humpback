@@ -31,4 +31,4 @@ dist-ssr/
 *.sw?
 
 # Vite cache
-node_modules/.vite/
+node_modules/
