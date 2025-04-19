@@ -1,0 +1,19 @@
+{
+  "form": {
+    "name": "Nome",
+    "email": "Email",
+    "phone": "Telefone",
+    "selected_date": "Dia escolhido",
+    "selected_time": "Hora escolhida",
+    "duration": "Duração",
+    "submit": "Reservar"
+  },
+  "labels": {
+    "select_date": "Selecione uma data",
+    "available_times": "Horários disponíveis",
+    "booking_form": "Formulário de reserva"
+  },
+  "warning_messages": {
+    "no_available_times": "Não há horários disponíveis para esta data."
+  }
+}

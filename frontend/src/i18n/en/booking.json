@@ -1,0 +1,19 @@
+{
+  "form": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "selected_date": "Selected Date",
+    "selected_time": "Selected Time",
+    "duration": "Duration",
+    "submit": "Book Now"
+  },
+  "labels": {
+    "select_date": "Select a date",
+    "available_times": "Available times",
+    "booking_form": "Booking Form"
+  },
+  "warning_messages": {
+    "no_available_times": "No available times for this date."
+  }
+}

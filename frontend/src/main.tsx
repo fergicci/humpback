@@ -7,6 +7,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
 import i18n from './i18n';
+import 'react-calendar/dist/Calendar.css';
 
 (window as any).i18next = i18n;
 

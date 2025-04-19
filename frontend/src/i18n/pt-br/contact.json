@@ -1,0 +1,26 @@
+{
+  "title": "Entre em Contato",
+  "intro": {
+    "p1": "Este é o lugar para falar com a gente sobre produção musical, gravação, mixagem, masterização, ensaios ou qualquer equipamento.",
+    "p2": "Se você quer agendar um horário, tirar dúvidas ou apenas conversar — estamos aqui.",
+    "p3": "Todas as suas informações pessoais — nome, email e telefone — serão mantidas em sigilo absoluto.",
+    "safe": "Você está seguro conosco."
+  },
+  "visit": {
+    "text": "Se quiser nos visitar ou ligar para a gente, aqui estão as informações de contato:",
+    "studio": "Humpback Studio",
+    "addressLine": "Rua Oceano, 123",
+    "city": "Londres",
+    "country": "Reino Unido",
+    "phone": "+44 20 1234 5678",
+    "contact": "Fernando Hernandes"
+  },
+  "form": {
+    "name": "Nome Completo",
+    "email": "Endereço de Email",
+    "phone": "Número de Telefone",
+    "message": "Mensagem",
+    "placeholder": "Conte pra gente o que você precisa...",
+    "submit": "Enviar Mensagem"
+  }
+}

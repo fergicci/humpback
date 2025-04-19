@@ -1,42 +1,76 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { saveBooking } from '../features/booking/bookingSlice';
+import React, { useState } from "react";
+import { Form, Button } from "react-bootstrap";
+import { useTranslation } from "react-i18next";
+import { I18N_NAMESPACES, TRANSLATION_KEYS } from "@/i18n/keys";
 
-function BookingForm() {
-  const dispatch = useDispatch();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [date, setDate] = useState('');
+interface BookingFormProps {
+  selectedDate: Date | null;
+  selectedTime: string | null;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(saveBooking({ name, email, date }));
-    alert('Booking submitted!');
-    setName('');
-    setEmail('');
-    setDate('');
-  };
+const BookingForm: React.FC<BookingFormProps> = ({
+  selectedDate,
+  selectedTime,
+}) => {
+  const { t } = useTranslation(I18N_NAMESPACES.BOOKING);
+  const [selectedDuration, setSelectedDuration] = useState<number>(2);
 
   return (
-    <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
-      <div className="mb-3">
-        <label htmlFor="name" className="form-label">Your Name</label>
-        <input type="text" id="name" className="form-control" value={name} onChange={(e) => setName(e.target.value)} required />
-      </div>
+    <>
+      <h3 className="mb-3">{t(TRANSLATION_KEYS.BOOKING.LABELS.BOOKING_FORM)}</h3>
+      <Form>
+        <Form.Group className="mb-3">
+          <Form.Label>{t(TRANSLATION_KEYS.BOOKING.FORM.NAME)}</Form.Label>
+          <Form.Control type="text" />
+        </Form.Group>
 
-      <div className="mb-3">
-        <label htmlFor="email" className="form-label">Email Address</label>
-        <input type="email" id="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      </div>
+        <Form.Group className="mb-3">
+          <Form.Label>{t(TRANSLATION_KEYS.BOOKING.FORM.EMAIL)}</Form.Label>
+          <Form.Control type="email" />
+        </Form.Group>
 
-      <div className="mb-3">
-        <label htmlFor="date" className="form-label">Preferred Date</label>
-        <input type="date" id="date" className="form-control" value={date} onChange={(e) => setDate(e.target.value)} required />
-      </div>
+        <Form.Group className="mb-3">
+          <Form.Label>{t(TRANSLATION_KEYS.BOOKING.FORM.PHONE)}</Form.Label>
+          <Form.Control type="tel" />
+        </Form.Group>
 
-      <button type="submit" className="btn btn-primary w-100">Submit Booking</button>
-    </form>
+        <Form.Group className="mb-3">
+          <Form.Label>
+            {t(TRANSLATION_KEYS.BOOKING.FORM.SELECTED_DATE)}
+          </Form.Label>
+          <Form.Control
+            type="text"
+            readOnly
+            value={selectedDate?.toLocaleDateString() || ""}
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>
+            {t(TRANSLATION_KEYS.BOOKING.FORM.SELECTED_TIME)}
+          </Form.Label>
+
+          <Form.Control type="text" readOnly value={selectedTime || ""} />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>{t(TRANSLATION_KEYS.BOOKING.FORM.DURATION)}</Form.Label>
+          <Form.Select
+            value={selectedDuration}
+            onChange={(e) => setSelectedDuration(Number(e.target.value))}
+          >
+            {[2, 3, 4, 5, 6, 7, 8].map((h) => (
+              <option key={h} value={h}>
+                {h} hour{h > 1 ? "s" : ""}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+
+        <Button>{t(TRANSLATION_KEYS.BOOKING.FORM.SUBMIT)}</Button>
+      </Form>
+    </>
   );
-}
+};
 
 export default BookingForm;
