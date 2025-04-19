@@ -1,0 +1,11 @@
+{
+    "nav": {
+      "home": "Início",
+      "gear": "Equipamentos",
+      "gallery": "Galeria",
+      "booking": "Agendamento",
+      "shopping": "Loja",
+      "contact": "Contato"
+    },
+    "language": "Idioma"
+}

@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Gear from './pages/Gear';
 import Gallery from './pages/Gallery';
 import Booking from './pages/Booking';
+import Shopping from './pages/Shopping';
 import Contact from './pages/Contact';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route path="/gear" element={<Gear />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/booking" element={<Booking />} />
+            <Route path="/shopping" element={<Shopping />} />
             <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>
