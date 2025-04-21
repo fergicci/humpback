@@ -11,7 +11,8 @@
   "labels": {
     "select_date": "Selecione uma data",
     "available_times": "Horários disponíveis",
-    "booking_form": "Formulário de reserva"
+    "booking_form": "Formulário de reserva",
+    "not_accepting": "No momento não estamos aceitando reservas. Por favor, volte em breve!"
   },
   "warning_messages": {
     "no_available_times": "Não há horários disponíveis para esta data."

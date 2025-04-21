@@ -11,7 +11,8 @@
   "labels": {
     "select_date": "Select a date",
     "available_times": "Available times",
-    "booking_form": "Booking Form"
+    "booking_form": "Booking Form",
+    "not_accepting": "We're not accepting bookings at the moment. Please check back soon!"
   },
   "warning_messages": {
     "no_available_times": "No available times for this date."

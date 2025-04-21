@@ -1,0 +1,10 @@
+{
+  "welcome": {
+    "message": "Welcome",
+    "greetings": "Where sound meets soul. Create. Record. Mix. Make music."
+  },
+  "news_panel": {
+    "title": "Latest News",
+    "empty": "No news at the moment. Stay tuned!"
+  }
+}

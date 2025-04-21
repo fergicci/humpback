@@ -1,5 +1,14 @@
-function Gear() {
-    return <h2 className="text-center mt-5">Studio Gear List 🎚️</h2>;
-  }
-  
-  export default Gear;
+import React from "react";
+import { Container } from "react-bootstrap";
+import GearIntroPanel from "@/components/GearIntroPanel";
+
+const Gear: React.FC = () => {
+  return (
+    <Container className="my-5">
+      <GearIntroPanel />
+      {/* future gear list or images */}
+    </Container>
+  );
+};
+
+export default Gear;

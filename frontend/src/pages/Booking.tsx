@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { Container, Row, Col, ListGroup } from "react-bootstrap";
@@ -22,37 +22,36 @@ const getLocaleCode = (lang: string) => {
 };
 
 // Fake booking data
-const today = new Date();
-const yyyy = today.getFullYear();
+// const today = new Date();
+// const yyyy = today.getFullYear();
 
-const mockAvailability = {
-  [`${yyyy}-04-21`]: ["10:00", "14:00", "16:00"],
-  [`${yyyy}-04-22`]: ["10:00", "16:00"],
-  [`${yyyy}-04-23`]: [],
-  [`${yyyy}-04-24`]: ["9:00", "12:00", "15:00"],
-};
+const mockAvailability = {};
 
 const Booking: React.FC = () => {
   const { i18n } = useTranslation();
   const { t } = useTranslation(I18N_NAMESPACES.BOOKING);
-  
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const formattedDate = selectedDate?.toLocaleDateString("en-CA") || "";
-  const availableTimes = mockAvailability[formattedDate] || [];
+  const availableTimes: string[] = mockAvailability[formattedDate] || [];
 
   return (
     <Container className="my-5">
+      <div className="alert alert-info text-center mb-4">
+        {t(TRANSLATION_KEYS.BOOKING.LABELS.NOT_ACCEPTING)}
+      </div>
       <Row>
         <Col md={6}>
           <h3 className="mb-3">
             {t(TRANSLATION_KEYS.BOOKING.LABELS.SELECT_DATE)}
           </h3>
           <Calendar
-            onChange={(date) => {
-              setSelectedDate(date);
-              setSelectedTime(null);
+            onChange={(value) => {
+              if (value instanceof Date) {
+                setSelectedDate(value);
+                setSelectedTime(null);
+              }
             }}
             value={selectedDate}
             locale={getLocaleCode(i18n.language)}

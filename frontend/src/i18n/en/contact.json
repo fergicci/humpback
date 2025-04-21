@@ -8,12 +8,7 @@
   },
   "visit": {
     "text": "If you'd like to visit us or just give us a call, here's how to reach us:",
-    "studio": "Humpback Studio",
-    "addressLine": "123 Ocean Lane",
-    "city": "London",
-    "country": "United Kingdom",
-    "phone": "+44 20 1234 5678",
-    "contact": "Fernando Hernandes"
+    "studio": "Humpback Studio"
   },
   "form": {
     "name": "Full Name",

@@ -25,13 +25,66 @@
 
 ## 4. Folder Structure
 
-```
+# 📁 Project Structure: Humpback Studio
+
+```text
 /humpback
-├── backend/       # Spring Boot project
-├── frontend/      # React.js project
-├── .github/       # GitHub Actions, CODEOWNERS, templates
-└── README.md
-```
+├── backend/                           # Spring Boot backend (APIs, security, DB)
+├── frontend/                          # React + Vite frontend (SPA)
+│   ├── .env.local                     # Environment-specific variables (used by Vite)
+│   ├── .gitignore                     # Git ignore rules (node_modules, etc.)
+│   ├── Dockerfile                     # Dockerfile to build the frontend
+│   ├── README.md                      # Frontend-specific documentation
+│   ├── eslint.config.js              # ESLint rules for code quality
+│   ├── index.html                     # Entry HTML template for Vite
+│   ├── package.json                   # Project metadata and dependencies
+│   ├── package-lock.json              # Lock file for exact dependency versions
+│   ├── public/                        # Static assets publicly served
+│   │   └── favicon.ico                # Website favicon icon
+│   ├── src/                           # Source code root
+│   │   ├── App.tsx                    # Main React component (entry view)
+│   │   ├── app/                       # Redux store setup
+│   │   │   └── store.ts               # Configures and exports Redux store
+│   │   ├── assets/                    # Images and static media used in components
+│   │   │   ├── console_01.jpg         # Image of the ASP8024 mixing console
+│   │   │   └── humpback-logo.png      # Humpback Studio logo
+│   │   ├── components/                # Reusable UI components
+│   │   │   ├── BookingForm.tsx        # Booking form component
+│   │   │   ├── Footer.tsx             # Site footer
+│   │   │   ├── GearIntroPanel.tsx     # Highlight panel for the ASP8024 console
+│   │   │   ├── Header.tsx             # Navigation bar
+│   │   │   ├── Hero.tsx               # Homepage banner section
+│   │   │   └── NewsPanel.tsx          # Homepage news panel component
+│   │   ├── env.d.ts                   # Type declarations for custom env vars
+│   │   ├── features/                  # Domain-specific Redux state/features
+│   │   │   └── booking                # Booking-specific Redux state (if any)
+│   │   ├── i18n/                      # i18n (internationalization) support
+│   │   │   ├── en/                    # English translations
+│   │   │   ├── pt-br/                 # Portuguese (Brazil) translations
+│   │   │   ├── index.ts               # i18n configuration (with namespaces)
+│   │   │   └── keys.ts                # Constants for translation keys
+│   │   ├── main.tsx                   # App entry point (mounts React DOM)
+│   │   ├── pages/                     # Route-level page components
+│   │   │   ├── Booking.tsx            # Booking page (calendar, form)
+│   │   │   ├── Contact.tsx            # Contact page (form + studio info)
+│   │   │   ├── Gallery.tsx            # Gallery page (photos and videos)
+│   │   │   ├── Gear.tsx               # Gear page (list and description)
+│   │   │   ├── Home.tsx               # Home page (hero + news panel)
+│   │   │   └── Shopping.tsx           # Placeholder for e-commerce or merch
+│   │   ├── styles/                    # Global stylesheets
+│   │   │   └── main.scss              # Global SCSS file
+│   │   ├── types/                     # Custom global type declarations
+│   │   │   └── assets.d.ts            # Allows importing .png/.jpg/etc as modules
+│   │   └── utils/                     # Utility functions and helpers
+│   │       └── datetimeUtils.ts       # Utilities for date and time formatting
+│   ├── tsconfig.app.json              # TypeScript config for app files
+│   ├── tsconfig.json                  # Base TypeScript config
+│   ├── tsconfig.node.json             # TypeScript config for Node-related files
+│   └── vite.config.ts                 # Vite configuration (plugins, aliases, env loading)
+├── .github/                           # GitHub configuration (Actions, templates)
+│   ├── workflows/                     # CI/CD pipeline workflows (e.g., build, deploy)
+│   └── ISSUE_TEMPLATE/                # Issue and PR templates
+└── README.md                          # Main project readme (overview, setup instructions)
 
 ## 5. Development Workflow
 

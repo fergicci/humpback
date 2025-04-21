@@ -1,42 +1,52 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { I18N_NAMESPACES } from "@/i18n/keys";
+import { I18N_NAMESPACES, TRANSLATION_KEYS } from "@/i18n/keys";
 
 const Contact: React.FC = () => {
+  const { i18n } = useTranslation();
   const { t } = useTranslation(I18N_NAMESPACES.CONTACT);
+
+  const lang = i18n.language.toLowerCase();
+  const suffix = lang === "pt-br" ? "PT_BR" : "EN";
+
+  const addressLine = import.meta.env[`VITE_APPLICATION_CONTACT_ADDRESSLINE_${suffix}`];
+  const city = import.meta.env[`VITE_APPLICATION_CONTACT_CITY_${suffix}`];
+  const country = import.meta.env[`VITE_APPLICATION_CONTACT_COUNTRY_${suffix}`];
+  const phone = import.meta.env[`VITE_APPLICATION_CONTACT_PHONE_${suffix}`];
+  const contact = import.meta.env[`VITE_APPLICATION_CONTACT_PERSON_${suffix}`];
 
   return (
     <Container className="my-5">
       <Row>
         {/* Left Side: Info */}
         <Col md={6} className="mb-4">
-          <h2>{t("title")}</h2>
-          <p>{t("intro.p1")}</p>
-          <p>{t("intro.p2")}</p>
-          <p>{t("intro.p3")}</p>
-          <p className="text-success fw-bold">{t("intro.safe")}</p>
-          <p>{t("visit.text")}</p>
+          <h2>{t(TRANSLATION_KEYS.CONTACT.TITLE)}</h2>
+          <p>{t(TRANSLATION_KEYS.CONTACT.INTRO.P1)}</p>
+          <p>{t(TRANSLATION_KEYS.CONTACT.INTRO.P2)}</p>
+          <p>{t(TRANSLATION_KEYS.CONTACT.INTRO.P3)}</p>
+          <p className="text-success fw-bold">{t(TRANSLATION_KEYS.CONTACT.INTRO.SAFE)}</p>
+          <p>{t(TRANSLATION_KEYS.CONTACT.VISIT.TEXT)}</p>
 
           <p className="d-flex align-items-start">
             <i className="bi bi-geo-alt me-2 mt-1" />
             <span>
-              <strong>{t("visit.studio")}</strong>
+              <strong>{t(TRANSLATION_KEYS.CONTACT.VISIT.STUDIO)}</strong>
               <br />
-              {t("visit.addressLine")}
+              {addressLine}
               <br />
-              {t("visit.city")}, {t("visit.country")}
+              {city}, {country}
             </span>
           </p>
 
           <p className="d-flex align-items-center">
             <i className="bi bi-telephone me-2" />
-            <strong>{t("visit.phone")}</strong>
+            <strong>{phone}</strong>
           </p>
 
           <p className="d-flex align-items-center">
             <i className="bi bi-person-circle me-2" />
-            <strong>{t("visit.contact")}</strong>
+            <strong>{contact}</strong>
           </p>
         </Col>
 
@@ -44,31 +54,31 @@ const Contact: React.FC = () => {
         <Col md={6}>
           <Form>
             <Form.Group className="mb-3" controlId="formName">
-              <Form.Label>{t("form.name")}</Form.Label>
+              <Form.Label>{t(TRANSLATION_KEYS.CONTACT.FORM.NAME)}</Form.Label>
               <Form.Control />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formEmail">
-              <Form.Label>{t("form.email")}</Form.Label>
+              <Form.Label>{t(TRANSLATION_KEYS.CONTACT.FORM.EMAIL)}</Form.Label>
               <Form.Control />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formPhone">
-              <Form.Label>{t("form.phone")}</Form.Label>
+              <Form.Label>{t(TRANSLATION_KEYS.CONTACT.FORM.PHONE)}</Form.Label>
               <Form.Control />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formMessage">
-              <Form.Label>{t("form.message")}</Form.Label>
+              <Form.Label>{t(TRANSLATION_KEYS.CONTACT.FORM.MESSAGE)}</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={8}
-                placeholder={t("form.placeholder")}
+                placeholder={t(TRANSLATION_KEYS.CONTACT.FORM.PLACEHOLDER)}
                 style={{ minHeight: "200px" }}
               />
             </Form.Group>
 
-            <Button>{t("form.submit")}</Button>
+            <Button>{t(TRANSLATION_KEYS.CONTACT.FORM.SUBMIT)}</Button>
           </Form>
         </Col>
       </Row>

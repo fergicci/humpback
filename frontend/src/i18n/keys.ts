@@ -10,15 +10,40 @@ export const TRANSLATION_KEYS = {
     LANGUAGE: "language",
   },
   HOME: {
-    WELCOME: "welcome",
-    INTRO: "intro",
-    CTA: "call_to_action",
+    WELCOME: {
+      MESSAGE: "welcome.message",
+      GREETINGS: "welcome.greetings",
+    },
+    NEWS_PANEL: {
+      TITLE: "news_panel.title",
+      EMPTY: "news_panel.empty",
+    },
+  },
+  GEAR: {
+    INTRO: {
+      TITLE: "intro.title",
+      P1: "intro.p1",
+      P2: "intro.p2",
+      P3: "intro.p3",
+    },
+  },
+  GALLERY: {
+    TITLE: "title",
+    PHOTOS: {
+      TITLE: "photos.title",
+      PLACEHOLDER: "photos.placeholder",
+    },
+    VIDEOS: {
+      TITLE: "videos.title",
+      PLACEHOLDER: "videos.placeholder",
+    },
   },
   BOOKING: {
     LABELS: {
       SELECT_DATE: "labels.select_date",
       AVAILABLE_TIMES: "labels.available_times",
       BOOKING_FORM: "labels.booking_form",
+      NOT_ACCEPTING: "labels.not_accepting",
     },
     FORM: {
       NAME: "form.name",
@@ -30,7 +55,28 @@ export const TRANSLATION_KEYS = {
       SUBMIT: "form.submit",
     },
     WARNING_MESSAGES: {
-      NO_AVAILABLE_TIMES: 'warning_messages.no_available_times',
+      NO_AVAILABLE_TIMES: "warning_messages.no_available_times",
+    },
+  },
+  CONTACT: {
+    TITLE: "title",
+    INTRO: {
+      P1: "intro.p1",
+      P2: "intro.p2",
+      P3: "intro.p3",
+      SAFE: "intro.safe",
+    },
+    VISIT: {
+      TEXT: "visit.text",
+      STUDIO: "visit.studio",
+    },
+    FORM: {
+      NAME: "form.name",
+      EMAIL: "form.email",
+      PHONE: "form.phone",
+      MESSAGE: "form.message",
+      PLACEHOLDER: "form.placeholder",
+      SUBMIT: "form.submit",
     },
   },
 };

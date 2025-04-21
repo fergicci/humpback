@@ -8,12 +8,7 @@
   },
   "visit": {
     "text": "Se quiser nos visitar ou ligar para a gente, aqui estão as informações de contato:",
-    "studio": "Humpback Studio",
-    "addressLine": "Rua Oceano, 123",
-    "city": "Londres",
-    "country": "Reino Unido",
-    "phone": "+44 20 1234 5678",
-    "contact": "Fernando Hernandes"
+    "studio": "Humpback Studio"
   },
   "form": {
     "name": "Nome Completo",

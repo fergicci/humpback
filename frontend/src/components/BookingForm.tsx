@@ -67,7 +67,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           </Form.Select>
         </Form.Group>
 
-        <Button>{t(TRANSLATION_KEYS.BOOKING.FORM.SUBMIT)}</Button>
+        <Button disabled>{t(TRANSLATION_KEYS.BOOKING.FORM.SUBMIT)}</Button>
       </Form>
     </>
   );
