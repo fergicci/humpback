@@ -1,0 +1,22 @@
+{
+  "title": "Get in Touch",
+  "intro": {
+    "p1": "This is the place to reach out about music production, recording, mixing, mastering, rehearsals, or any of our equipment.",
+    "p2": "Whether you're booking time, asking for details, or simply curious — we'd love to hear from you.",
+    "p3": "All your personal information — including name, email, and phone number — will be kept strictly confidential.",
+    "safe": "You're safe with us."
+  },
+  "visit": {
+    "text": "If you'd like to visit us or just give us a call, here's how to reach us:",
+    "studio": "Humpback Studio"
+  },
+  "form": {
+    "name": "Full Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "message": "Message",
+    "placeholder": "Tell us what you're looking for...",
+    "submit": "Send Message",
+    "not_accepting": "We're not accepting form submission at the moment. Feel free to send me a message on the mobile number!"
+  }
+}
