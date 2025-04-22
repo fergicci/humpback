@@ -11,6 +11,7 @@
     "obfuscate": "javascript-obfuscator dist/assets --output dist/assets"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "@reduxjs/toolkit": "^2.7.0",
     "bootstrap": "^5.3.5",
     "bootstrap-icons": "^1.11.3",

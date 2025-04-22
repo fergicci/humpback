@@ -77,6 +77,7 @@ export const TRANSLATION_KEYS = {
       MESSAGE: "form.message",
       PLACEHOLDER: "form.placeholder",
       SUBMIT: "form.submit",
+      NOT_ACCEPTING: "form.not_accepting",
     },
   },
 };

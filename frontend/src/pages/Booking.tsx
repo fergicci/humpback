@@ -25,8 +25,6 @@ const getLocaleCode = (lang: string) => {
 // const today = new Date();
 // const yyyy = today.getFullYear();
 
-const mockAvailability = {};
-
 const Booking: React.FC = () => {
   const { i18n } = useTranslation();
   const { t } = useTranslation(I18N_NAMESPACES.BOOKING);
@@ -34,6 +32,7 @@ const Booking: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const formattedDate = selectedDate?.toLocaleDateString("en-CA") || "";
+  const mockAvailability: Record<string, string[]> = {};
   const availableTimes: string[] = mockAvailability[formattedDate] || [];
 
   return (

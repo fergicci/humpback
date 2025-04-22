@@ -16,6 +16,7 @@
     "phone": "Phone Number",
     "message": "Message",
     "placeholder": "Tell us what you're looking for...",
-    "submit": "Send Message"
+    "submit": "Send Message",
+    "not_accepting": "We're not accepting form submission at the moment. Feel free to send me a message on the mobile number!"
   }
 }

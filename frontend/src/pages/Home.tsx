@@ -15,7 +15,7 @@ function Home() {
             <img
               src={logo}
               alt="Humpback Studio Logo"
-              style={{ width: "600px", marginBottom: "2rem" }}
+              className="img-fluid responsive-logo"
             />
             <h3 className="display-6 mt-4">
               {t(TRANSLATION_KEYS.HOME.WELCOME.MESSAGE)}

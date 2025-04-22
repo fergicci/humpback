@@ -6,6 +6,9 @@ WORKDIR /app
 
 # Copy only what's needed
 COPY dist/ ./dist/
+COPY .env.local .env.production.local
+
+# Copy package files and install only production dependencies
 COPY package.json package-lock.json ./
 
 # Install only production dependencies
