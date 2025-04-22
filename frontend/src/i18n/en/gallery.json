@@ -1,0 +1,11 @@
+{
+  "title": "Gallery",
+  "photos": {
+    "title": "Pictures",
+    "placeholder": "No photos available at the moment. As soon as we have them, they’ll appear here!"
+  },
+  "videos": {
+    "title": "Videos",
+    "placeholder": "No videos available at the moment. As soon as we have them, they’ll appear here!"
+  }
+}
