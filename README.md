@@ -18,7 +18,7 @@
 ### Components
 - **Frontend:** React.js with modern hooks and component architecture
 - **Backend:** Spring Boot REST API
-- **Hosting:** AWS (S3 for static assets, EC2 or Elastic Beanstalk for backend)
+- **Hosting:** AWS
 - **CI/CD:** GitHub Actions (planned)
 
 📌 _Architecture diagram will be added here._
