@@ -1,17 +1,17 @@
 package studio.humpback.backend.model;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Document(collection = "contacts")
+import java.time.Instant;
+
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Document(collection = "contacts")
 public class Contact {
 
     @Id
@@ -20,4 +20,5 @@ public class Contact {
     private String email;
     private String telephone;
     private String message;
+    private Instant createdAt;
 }

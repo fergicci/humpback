@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -23,4 +24,11 @@ public class User {
     private String email;
     private Instant createdAt;
     private Instant lastLogin;
+    private Instant passwordExpiredAt;
+
+    public Boolean isPasswordExpired() {
+        return Optional.ofNullable(this.passwordExpiredAt)
+            .map(expiration -> expiration.isBefore(Instant.now()))
+            .orElse(true);
+    }
 }

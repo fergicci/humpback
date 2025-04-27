@@ -25,6 +25,11 @@ public class AuthController {
     public ApiResponse<UserResponse> login(@RequestBody LoginRequest loginRequest) {
         User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         
+        String token = jwtTokenProvider.createToken(
+            user.getUsername(),
+            user.getRoles()
+        );
+
         UserResponse userResponse = UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -33,6 +38,7 @@ public class AuthController {
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())
                 .lastLogin(user.getLastLogin())
+                .token(token)
                 .build();
 
         return ApiResponse.success(userResponse);

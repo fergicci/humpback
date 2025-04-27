@@ -1,6 +1,7 @@
 package studio.humpback.backend.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -12,7 +13,7 @@ import studio.humpback.backend.dto.ApiError;
 import studio.humpback.backend.dto.ApiResponse;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.util.Date;
 import java.util.Collections;
 
 @Component
@@ -26,7 +27,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response,
             AccessDeniedException accessDeniedException) throws IOException {
         ApiError error = ApiError.builder()
-                .timestamp(Instant.now())
+                .timestamp(new Date())
                 .code(HttpServletResponse.SC_FORBIDDEN)
                 .message(FORBIDDEN)
                 .details(Collections.singletonList(accessDeniedException.getMessage()))
@@ -39,6 +40,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType(JSON_CONTENT_TYPE);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.writeValue(response.getOutputStream(), apiResponse);
     }
 }

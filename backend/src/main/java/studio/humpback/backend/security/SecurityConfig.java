@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private static final String API_AUTH_LOGIN = "/api/v1/auth/login";
-    private static final String API_CONTACT = "/api/v1/contact";
+    private static final String API_CONTACTS = "/api/v1/contacts";
     private static final String API_NEWS = "/api/v1/news";
     private static final String API_OPTIONS_ALL = "/**";
     
@@ -41,7 +41,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, API_AUTH_LOGIN).permitAll()
-                .requestMatchers(HttpMethod.POST, API_CONTACT).permitAll()
+                .requestMatchers(HttpMethod.POST, API_CONTACTS).permitAll()
                 .requestMatchers(HttpMethod.GET, API_NEWS).permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, API_OPTIONS_ALL).permitAll()
                 .anyRequest().authenticated()

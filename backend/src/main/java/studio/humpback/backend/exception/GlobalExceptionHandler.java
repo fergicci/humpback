@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
                 .toList();
 
         ApiError apiError = ApiError.builder()
-                .timestamp(Instant.now())
+                .timestamp(new Date())
                 .code(HttpStatus.BAD_REQUEST.value())
                 .message("Validation failed")
                 .details(validationErrors)
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ApiResponse<Void>> buildErrorResponse(HttpStatus status, String message, String detail) {
         ApiError error = ApiError.builder()
-                .timestamp(Instant.now())
+                .timestamp(new Date())
                 .code(status.value())
                 .message(message)
                 .details(Collections.singletonList(detail))
