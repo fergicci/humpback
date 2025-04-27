@@ -6,17 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
-import java.util.List;
 
 @Data
 @Builder
-public class ApiError {
+public class NewsResponse {
+    private String id;
+    private String title;
+    private String content;
 
-    
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-    private Instant timestamp;
-    
-    private int code;
-    private String message;
-    private List<String> details;
+    private Instant createdAt;
 }
