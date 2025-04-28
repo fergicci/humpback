@@ -2,6 +2,8 @@ package studio.humpback.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import studio.humpback.backend.model.Contact;
 import studio.humpback.backend.repository.ContactRepository;
 import studio.humpback.backend.dto.ContactRequest;
@@ -27,6 +29,10 @@ public class ContactService {
 
     public List<Contact> findAll() {
         return contactRepository.findAll();
+    }
+
+    public Page<Contact> getPage(Pageable pageable) {
+        return contactRepository.findAll(pageable);
     }
 
     public void deleteById(String id) {

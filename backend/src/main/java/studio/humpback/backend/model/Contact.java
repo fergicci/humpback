@@ -21,4 +21,7 @@ public class Contact {
     private String telephone;
     private String message;
     private Instant createdAt;
+    
+    @Builder.Default
+    private Boolean read = false;
 }

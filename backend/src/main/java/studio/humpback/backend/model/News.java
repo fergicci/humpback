@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,8 +17,7 @@ public class News {
 
     @Id
     private String id;
-    private String title;
-    private String content;
+    private List<NewsTranslation> translations;
     private Instant createdAt;
     private Instant updatedAt;
 }

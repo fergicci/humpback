@@ -1,20 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { TRANSLATION_KEYS, I18N_NAMESPACES } from "@/i18n/keys";
+import { getNews, NewsItem } from "@/services/newsService";
+import { SkeletonLoader } from "@/components/SkeletonLoader";
 
-interface NewsItem {
-  id: string;
-  date: string;
-  message: string;
-}
+const NewsPanel: React.FC = () => {
+  const { t, i18n } = useTranslation(I18N_NAMESPACES.HOME);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-interface NewsPanelProps {
-  newsItems?: NewsItem[];
-}
+  useEffect(() => {
+    const loadNews = async () => {
+      try {
+        const lang = i18n.language || "en";
+        const news = await getNews(lang, 1, 10);
+        setNewsItems(news);
+      } catch (error) {
+        console.error("Error fetching news:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-const NewsPanel: React.FC<NewsPanelProps> = ({ newsItems = [] }) => {
-  const { t } = useTranslation(I18N_NAMESPACES.HOME);
+    loadNews();
+  }, [i18n.language]);
 
   return (
     <Card className="shadow-sm">
@@ -22,10 +32,22 @@ const NewsPanel: React.FC<NewsPanelProps> = ({ newsItems = [] }) => {
         {t(TRANSLATION_KEYS.HOME.NEWS_PANEL.TITLE)}
       </Card.Header>
       <Card.Body>
-        {newsItems.length > 0 ? (
+        {isLoading ? (
+          <>
+            <SkeletonLoader />
+            <SkeletonLoader />
+            <SkeletonLoader />
+          </>
+        ) : newsItems.length > 0 ? (
           <ul className="list-unstyled">
             {newsItems.map((item) => (
-              <li key={item.id}>{item.message}</li>
+              <li key={item.id} className="mb-3">
+                <div className="fw-bold">{item.title}</div>
+                <div className="small text-muted">
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </div>
+                <div>{item.content}</div>
+              </li>
             ))}
           </ul>
         ) : (
