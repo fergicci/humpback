@@ -18,7 +18,7 @@
 ### Components
 - **Frontend:** React.js with modern hooks and component architecture
 - **Backend:** Spring Boot REST API
-- **Hosting:** AWS (S3 for static assets, EC2 or Elastic Beanstalk for backend)
+- **Hosting:** AWS
 - **CI/CD:** GitHub Actions (planned)
 
 📌 _Architecture diagram will be added here._
@@ -85,6 +85,7 @@
 │   ├── workflows/                     # CI/CD pipeline workflows (e.g., build, deploy)
 │   └── ISSUE_TEMPLATE/                # Issue and PR templates
 └── README.md                          # Main project readme (overview, setup instructions)
+```
 
 ## 5. Development Workflow
 
@@ -100,22 +101,22 @@
 - **Language:** Java 21
 - **Build Tool:** Gradle
 - **API:** REST (JSON)
-- **Database:** (TBD) PostgreSQL or another AWS-compatible solution
+- **Database:** MongoDB
 - **Security:** Spring Security + JWT/OAuth2 (planned)
 
 ## 7. Frontend Design
 
-- **Framework:** React.js (Vite or CRA)
+- **Framework:** React.js (Vite)
 - **Routing:** React Router
-- **State Management:** Context API (or Redux if needed)
-- **UI Library:** (TBD: Material UI / Tailwind / Custom)
+- **State Management:** Context API and Redux
+- **UI Library:** Bootstrap
 - **API Integration:** Axios or Fetch
 
 ## 8. Deployment Strategy
 
-- **Frontend:** AWS S3 + CloudFront
-- **Backend:** AWS EC2 or Elastic Beanstalk
-- **DNS:** Route53 (already set up)
+- **Frontend:** AWS
+- **Backend:** AWS
+- **DNS:** GoDaddy
 - **Secrets:** Environment variables, `.env`, and AWS Secrets Manager (planned)
 
 ## 9. Testing Strategy
