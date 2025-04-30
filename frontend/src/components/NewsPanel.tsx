@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { TRANSLATION_KEYS, I18N_NAMESPACES } from "@/i18n/keys";
+import { getBaseLang } from "@/utils/langUtils";
 import { getNews, NewsItem } from "@/services/newsService";
 import { SkeletonLoader } from "@/components/SkeletonLoader";
 
@@ -13,8 +14,8 @@ const NewsPanel: React.FC = () => {
   useEffect(() => {
     const loadNews = async () => {
       try {
-        const lang = i18n.language || "en";
-        const news = await getNews(lang, 1, 10);
+        const lang = i18n.language;
+        const news = await getNews(getBaseLang(lang), 1, 3);
         setNewsItems(news);
       } catch (error) {
         console.error("Error fetching news:", error);

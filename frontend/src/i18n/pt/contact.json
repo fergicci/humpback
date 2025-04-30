@@ -17,6 +17,8 @@
     "message": "Mensagem",
     "placeholder": "Conte pra gente o que você precisa...",
     "submit": "Enviar Mensagem",
-    "not_accepting": "No momento não estamos aceitando envio de mensagens pelo formulário. Sinta-se à vontade para me mandar uma mensagem pelo celular!"
+    "not_accepting": "No momento não estamos aceitando envio de mensagens pelo formulário. Sinta-se à vontade para me mandar uma mensagem pelo celular!",
+    "generic_error": "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.",
+    "success": "Obrigado por entrar em contato! Responderemos o mais breve possível."
   }
 }

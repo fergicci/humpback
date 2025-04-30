@@ -7,5 +7,8 @@
       "shopping": "Loja",
       "contact": "Contato"
     },
-    "language": "Idioma"
+    "language": "Idioma",
+    "not_found": {
+        "error": "Oops! Pagina não encontrada."
+    }
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TRANSLATION_KEYS, I18N_NAMESPACES } from '@/i18n/keys';
+import { getBaseLang } from "@/utils/langUtils";
 
 function Header() {
     const { t, i18n } = useTranslation(I18N_NAMESPACES.COMMON);
@@ -15,7 +16,6 @@ function Header() {
             <NavLink className="navbar-brand" to="/">
                 Humpback Studio
             </NavLink>
-    ß
             <button
                 className="navbar-toggler"
                 type="button"
@@ -61,12 +61,12 @@ function Header() {
                     <i className="bi bi-globe me-2" title="Select Language" />
                     <select
                         id="lang-select"
-                        value={i18n.language}
+                        value={getBaseLang(i18n.language)}
                         onChange={changeLanguage}
                         className="form-select form-select-sm d-inline-block w-auto"
                     >
                         <option value="en">🇬🇧 English</option>
-                        <option value="pt-BR">🇧🇷 Português</option>
+                        <option value="pt">🇧🇷 Português</option>
                     </select>
                 </div>
             </div>

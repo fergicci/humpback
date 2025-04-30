@@ -8,6 +8,9 @@ export const TRANSLATION_KEYS = {
       CONTACT: "nav.contact",
     },
     LANGUAGE: "language",
+    NOT_FOUND: {
+      ERROR: "not_found.error",
+    }
   },
   HOME: {
     WELCOME: {
@@ -78,6 +81,8 @@ export const TRANSLATION_KEYS = {
       PLACEHOLDER: "form.placeholder",
       SUBMIT: "form.submit",
       NOT_ACCEPTING: "form.not_accepting",
+      GENERIC_ERROR: "form.generic_error",
+      SUCCESS: "form.success",
     },
   },
 };

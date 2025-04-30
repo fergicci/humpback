@@ -10,9 +10,9 @@ const Gear: React.FC = () => {
 
   return (
     <Container className="my-5">
-      <h2 className="mb-4">{t(TRANSLATION_KEYS.GEAR.INTRO.TITLE)}</h2>
       <Row>
         <Col md={6}>
+          <h2 className="mb-4">{t(TRANSLATION_KEYS.GEAR.INTRO.TITLE)}</h2>
           <p>{t(TRANSLATION_KEYS.GEAR.INTRO.P1)}</p>
           <p>{t(TRANSLATION_KEYS.GEAR.INTRO.P2)}</p>
           <p>{t(TRANSLATION_KEYS.GEAR.INTRO.P3)}</p>
