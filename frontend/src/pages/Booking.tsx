@@ -8,10 +8,6 @@ import { getCalendarLocale } from "@/utils/langUtils";
 import { useTranslation } from "react-i18next";
 import { I18N_NAMESPACES, TRANSLATION_KEYS } from "@/i18n/keys";
 
-// Fake booking data
-// const today = new Date();
-// const yyyy = today.getFullYear();
-
 const Booking: React.FC = () => {
   const { i18n } = useTranslation();
   const { t } = useTranslation(I18N_NAMESPACES.BOOKING);

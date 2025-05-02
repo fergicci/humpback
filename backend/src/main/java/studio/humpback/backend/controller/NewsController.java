@@ -22,6 +22,7 @@ import studio.humpback.backend.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.Locale;
 
+
 @RestController
 @RequestMapping("/api/v1/news")
 @RequiredArgsConstructor

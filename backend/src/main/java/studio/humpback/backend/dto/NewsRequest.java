@@ -5,6 +5,7 @@ import lombok.Setter;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+
 @Getter
 @Setter
 public class NewsRequest {
