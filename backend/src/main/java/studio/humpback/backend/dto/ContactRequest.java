@@ -12,19 +12,15 @@ import jakarta.validation.constraints.Pattern;
 @Setter
 public class ContactRequest {
 
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "{contact.request.name.required}")
     private String name;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{contact.request.email.required}")
+    @Email(message = "{contact.request.email.invalid}")
     private String email;
 
-    @NotBlank(message = "Telephone is required")
-    @Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\./0-9]*$", message = "Invalid telephone format")
-    private String telephone;
-
-    @NotBlank(message = "Message is required")
-    @Size(max = 500, message = "Message must be at most 500 characters")
+    @NotBlank(message = "{contact.request.message.required}")
+    @Size(max = 500, message = "{contact.request.message.size}")
     private String message;
 
 }

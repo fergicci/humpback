@@ -20,7 +20,6 @@ public class ContactService {
         Contact contact = Contact.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .telephone(request.getTelephone())
                 .message(request.getMessage())
                 .createdAt(Instant.now())
                 .build();

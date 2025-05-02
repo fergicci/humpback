@@ -20,81 +20,83 @@ import studio.humpback.backend.service.NewsService;
 import studio.humpback.backend.exception.ResourceNotFoundException;
 
 import java.util.List;
+import java.util.Locale;
+
 
 @RestController
 @RequestMapping("/api/v1/news")
 @RequiredArgsConstructor
 public class NewsController {
 
-    private final NewsService newsService;
+        private final NewsService newsService;
 
-    @GetMapping
-    public ApiResponse<PagedResponse<NewsResponse>> getAllNews(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "en") String lang) {
+        @GetMapping
+        public ApiResponse<PagedResponse<NewsResponse>> getAllNews(
+                        @RequestParam(defaultValue = "1") int page,
+                        @RequestParam(defaultValue = "10") int size,
+                        Locale locale) {
 
-        Pageable pageable = PageRequest.of(
-                page - 1,
-                size,
-                Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<News> newsPage = newsService.getPage(pageable);
+                Pageable pageable = PageRequest.of(
+                                page - 1,
+                                size,
+                                Sort.by(Sort.Direction.DESC, "createdAt"));
+                Page<News> newsPage = newsService.getPage(pageable);
 
-        List<NewsResponse> content = newsPage.getContent()
-                .stream()
-                .map(news -> toResponse(news, lang))
-                .toList();
+                List<NewsResponse> content = newsPage.getContent()
+                                .stream()
+                                .map(news -> toResponse(news, locale.getLanguage()))
+                                .toList();
 
-        PagedResponse<NewsResponse> pagedResponse = PagedResponse.<NewsResponse>builder()
-                .content(content)
-                .page(newsPage.getNumber())
-                .size(newsPage.getSize())
-                .totalElements(newsPage.getTotalElements())
-                .totalPages(newsPage.getTotalPages())
-                .build();
+                PagedResponse<NewsResponse> pagedResponse = PagedResponse.<NewsResponse>builder()
+                                .content(content)
+                                .page(newsPage.getNumber())
+                                .size(newsPage.getSize())
+                                .totalElements(newsPage.getTotalElements())
+                                .totalPages(newsPage.getTotalPages())
+                                .build();
 
-        return ApiResponse.success(pagedResponse);
-    }
+                return ApiResponse.success(pagedResponse);
+        }
 
-    private NewsResponse toResponse(News news, String lang) {
-        NewsTranslation translation = news.getTranslations().stream()
-                .filter(t -> t.getLang().equalsIgnoreCase(lang))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Translation not found"));
+        private NewsResponse toResponse(News news, String lang) {
+                NewsTranslation translation = news.getTranslations().stream()
+                                .filter(t -> t.getLang().equalsIgnoreCase(lang))
+                                .findFirst()
+                                .orElseThrow(() -> new ResourceNotFoundException("Translation not found"));
 
-        return NewsResponse.builder()
-                .id(news.getId())
-                .title(translation.getTitle())
-                .content(translation.getContent())
-                .createdAt(news.getCreatedAt())
-                .build();
-    }
+                return NewsResponse.builder()
+                                .id(news.getId())
+                                .title(translation.getTitle())
+                                .content(translation.getContent())
+                                .createdAt(news.getCreatedAt())
+                                .build();
+        }
 
-    @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ApiResponse<NewsResponse> createNews(
-            @RequestParam(defaultValue = "en") String lang,
-            @RequestBody @Valid NewsRequest newsRequest) {
+        @PostMapping
+        @PreAuthorize("hasAuthority('ADMIN')")
+        public ApiResponse<NewsResponse> createNews(
+                        @RequestBody @Valid NewsRequest newsRequest,
+                        Locale locale) {
+                String lang = locale.getLanguage();
+                News news = newsService.create(lang, newsRequest.getTitle(), newsRequest.getContent());
+                return ApiResponse.success(toResponse(news, lang));
+        }
 
-        News news = newsService.create(lang, newsRequest.getTitle(), newsRequest.getContent());
-        return ApiResponse.success(toResponse(news, lang));
-    }
+        @PutMapping("/{id}")
+        @PreAuthorize("hasAuthority('ADMIN')")
+        public ApiResponse<NewsResponse> updateNews(
+                        @PathVariable String id,
+                        @RequestBody @Valid NewsRequest newsRequest,
+                        Locale locale) {
+                String lang = locale.getLanguage();
+                News news = newsService.update(id, lang, newsRequest.getTitle(), newsRequest.getContent());
+                return ApiResponse.success(toResponse(news, lang));
+        }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ApiResponse<NewsResponse> updateNews(
-            @PathVariable String id,
-            @RequestParam(defaultValue = "en") String lang,
-            @RequestBody @Valid NewsRequest newsRequest) {
-
-        News news = newsService.update(id, lang, newsRequest.getTitle(), newsRequest.getContent());
-        return ApiResponse.success(toResponse(news, lang));
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ApiResponse<Void> deleteNews(@PathVariable String id) {
-        newsService.delete(id);
-        return ApiResponse.success();
-    }
+        @DeleteMapping("/{id}")
+        @PreAuthorize("hasAuthority('ADMIN')")
+        public ApiResponse<Void> deleteNews(@PathVariable String id) {
+                newsService.delete(id);
+                return ApiResponse.success();
+        }
 }

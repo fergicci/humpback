@@ -4,7 +4,12 @@
         "gear": "Gear",
         "gallery": "Gallery",
         "booking": "Booking",
+        "workshop": "Workshop",
+        "shop": "Shop",
         "contact": "Contact"
     },
-    "language": "Language"
+    "language": "Language",
+    "not_found": {
+        "error": "Oops! Page not found."
+    }
 }

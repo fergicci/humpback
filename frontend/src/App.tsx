@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import Gear from './pages/Gear';
-import Gallery from './pages/Gallery';
-import Booking from './pages/Booking';
-import Shopping from './pages/Shopping';
-import Contact from './pages/Contact';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Home from '@/pages/Home';
+import Gear from '@/pages/Gear';
+import Gallery from '@/pages/Gallery';
+import Booking from '@/pages/Booking';
+import Contact from '@/pages/Contact';
+import NotFound from "@/pages/NotFound";
+
 
 function App() {
   return (
@@ -19,8 +20,8 @@ function App() {
             <Route path="/gear" element={<Gear />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/booking" element={<Booking />} />
-            <Route path="/shopping" element={<Shopping />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

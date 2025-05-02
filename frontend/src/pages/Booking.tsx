@@ -4,26 +4,9 @@ import "react-calendar/dist/Calendar.css";
 import { Container, Row, Col, ListGroup } from "react-bootstrap";
 import BookingForm from "@/components/BookingForm";
 import { formatTime } from "@/utils/datetimeUtils";
-
+import { getCalendarLocale } from "@/utils/langUtils";
 import { useTranslation } from "react-i18next";
 import { I18N_NAMESPACES, TRANSLATION_KEYS } from "@/i18n/keys";
-
-// Locale
-const getLocaleCode = (lang: string) => {
-  switch (lang.toLowerCase()) {
-    case "pt":
-    case "pt-br":
-    case "pt-BR":
-      return "pt";
-    case "en":
-    default:
-      return "en-US";
-  }
-};
-
-// Fake booking data
-// const today = new Date();
-// const yyyy = today.getFullYear();
 
 const Booking: React.FC = () => {
   const { i18n } = useTranslation();
@@ -53,7 +36,7 @@ const Booking: React.FC = () => {
               }
             }}
             value={selectedDate}
-            locale={getLocaleCode(i18n.language)}
+            locale={getCalendarLocale(i18n.language)}
           />
 
           <h5 className="mt-4">

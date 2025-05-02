@@ -5,17 +5,17 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { I18N_NAMESPACES } from './keys';
 
 import commonEN from './en/common.json';
-import commonPT from './pt-br/common.json';
+import commonPT from './pt/common.json';
 import contactEN from './en/contact.json';
-import contactPT from './pt-BR/contact.json';
+import contactPT from './pt/contact.json';
 import bookingEN from './en/booking.json';
-import bookingPT from './pt-BR/booking.json';
+import bookingPT from './pt/booking.json';
 import homeEN from './en/home.json';
-import homePT from './pt-BR/home.json';
+import homePT from './pt/home.json';
 import gearEN from './en/gear.json';
-import gearPT from './pt-BR/gear.json';
+import gearPT from './pt/gear.json';
 import galleryEN from './en/gallery.json';
-import galleryPT from './pt-BR/gallery.json';
+import galleryPT from './pt/gallery.json';
 
 i18n
   .use(LanguageDetector)
@@ -45,15 +45,7 @@ i18n
         booking: bookingEN,
         contact: contactEN,
       },
-      'pt-br': {
-        common: commonPT,
-        home: homePT,
-        gear: gearPT,
-        gallery: galleryPT,
-        booking: bookingPT,
-        contact: contactPT,
-      },
-      'pt-BR': {
+      pt: {
         common: commonPT,
         home: homePT,
         gear: gearPT,

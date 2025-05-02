@@ -6,34 +6,46 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.context.MessageSource;
 
 import java.util.Date;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 
 import studio.humpback.backend.dto.ApiResponse;
 import studio.humpback.backend.dto.ApiError;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
+
 public class GlobalExceptionHandler {
 
+    private static final String VALIDATION_FAILED = "Validation failed";
+    
+    private final MessageSource messageSource;
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(
+        MethodArgumentNotValidException ex,
+        Locale locale
+    ) {
         log.error("Validation error: {}", ex.getMessage());
 
         List<String> validationErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .map(fieldError -> fieldError.getField() + ": " + messageSource.getMessage(fieldError, locale))
                 .toList();
 
         ApiError apiError = ApiError.builder()
                 .timestamp(new Date())
                 .code(HttpStatus.BAD_REQUEST.value())
-                .message("Validation failed")
+                .message(VALIDATION_FAILED)
                 .details(validationErrors)
                 .build();
 

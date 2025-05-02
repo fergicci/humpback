@@ -14,7 +14,6 @@ public class ContactResponse {
     private String id;
     private String name;
     private String email;
-    private String telephone;
     private String message;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
