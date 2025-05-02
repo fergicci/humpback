@@ -18,7 +18,6 @@ public class Contact {
     private String id;
     private String name;
     private String email;
-    private String telephone;
     private String message;
     private Instant createdAt;
     

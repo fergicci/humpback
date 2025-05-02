@@ -6,5 +6,61 @@
   "news_panel": {
     "title": "Latest News",
     "empty": "No news at the moment. Stay tuned!"
+  },
+  "highlight": {
+    "composition": {
+      "title": "COMPOSITION",
+      "description": [
+        "Composing is giving shape to what doesn't yet exist — transforming emotions into music.",
+        "We help artists develop musical ideas from simple sketches to full, expressive works.",
+        "We collaborate closely with you, understanding your language, style, and artistic vision to create something unique.",
+        "Through harmony, structure, arrangement, and musical theory, we ensure each composition is coherent, impactful, and true to your identity."
+      ]
+    },
+    "recording": {
+      "title": "RECORDING",
+      "description": [
+        "Recording is about capturing the right moment in the most honest way possible.",
+        "We offer recording services for instruments, vocals, and musical performances with a focus on clarity and emotion.",
+        "We create a comfortable, acoustically treated, and technically prepared environment to bring out the best in every artist.",
+        "We use proper microphones, high-quality interfaces, and efficient acoustic placement to ensure clean, professional recordings."
+      ]
+    },
+    "mixing": {
+      "title": "MIXING",
+      "description": [
+        "Mixing is the process of revealing a song's hidden potential.",
+        "We balance, clean, enhance, and breathe life into every element of your recording.",
+        "Our mixes respect your creative vision while adding detail, space, and energy.",
+        "Using EQ, compression, automation, and spatial effects, we deliver a cohesive and dynamic sound that translates well across all playback systems."
+      ]
+    },
+    "mastering": {
+      "title": "MASTERING",
+      "description": [
+        "Mastering is polishing the piece for the world to hear.",
+        "We finalize your sound with clarity and consistency, preparing it for digital platforms, streaming, radio, or physical media.",
+        "We aim to preserve your sonic identity while enhancing the track's overall impact.",
+        "Through subtle EQ, multiband compression, limiting, and loudness normalization, we meet industry standards while keeping the music vibrant and natural."
+      ]
+    },
+    "workshop": {
+      "title": "WORKSHOP",
+      "description": [
+        "Learning opens the door to new creative possibilities.",
+        "Soon, we'll be offering workshops on composition, recording, mixing, and music production.",
+        "Our goal is to share knowledge in an accessible, practical, and inspiring way.",
+        "Stay tuned — fresh learning opportunities are coming to Humpback Studio."
+      ]
+    },
+    "shop": {
+      "title": "SHOP",
+      "description": [
+        "Music is also a lifestyle beyond the sound itself.",
+        "Our shop isn't available yet, but soon you'll find exclusive items related to Humpback Studio.",
+        "We're curating a selection of products that reflect our style and spirit.",
+        "Coming soon: gear, accessories, apparel, and more — stay connected for updates."
+      ]
+    }
   }
 }

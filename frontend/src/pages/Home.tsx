@@ -3,6 +3,7 @@ import NewsPanel from "@/components/NewsPanel";
 import logo from "@/assets/humpback-logo.png";
 import { useTranslation } from "react-i18next";
 import { TRANSLATION_KEYS, I18N_NAMESPACES } from "@/i18n/keys";
+import HighlightContainer from "@/components/HighlightContainer";
 
 function Home() {
   const { t } = useTranslation(I18N_NAMESPACES.HOME);
@@ -27,6 +28,9 @@ function Home() {
         <Col md={4}>
           <NewsPanel />
         </Col>
+      </Row>
+      <Row>
+        <HighlightContainer />
       </Row>
     </Container>
   );

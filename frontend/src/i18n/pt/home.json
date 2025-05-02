@@ -6,5 +6,61 @@
   "news_panel": {
     "title": "Últimas Notícias",
     "empty": "Nenhuma novidade no momento. Fique ligado!"
+  },
+  "highlight": {
+    "composition": {
+      "title": "COMPOSIÇÃO",
+      "description": [
+        "Compor é dar forma àquilo que ainda não existe: transformar emoções em música.",
+        "Ajudamos artistas a desenvolver ideias musicais desde esboços simples até obras completas e expressivas.",
+        "Trabalhamos lado a lado com você, entendendo sua linguagem, estilo e intenção para criar algo único.",
+        "Utilizamos técnicas de harmonia, estrutura, arranjo e teoria musical para garantir que a composição tenha coerência, impacto e identidade."
+      ]
+    },
+    "recording": {
+      "title": "GRAVAÇÃO",
+      "description": [
+        "Gravar é capturar o momento certo da forma mais verdadeira possível.",
+        "Oferecemos serviços de gravação para instrumentos, vozes e performances musicais com foco em fidelidade e emoção.",
+        "Criamos um ambiente confortável, controlado e tecnicamente preparado para registrar o melhor de cada artista.",
+        "Usamos microfones adequados, interfaces de qualidade e posicionamento acústico eficiente para garantir captação limpa e profissional."
+      ]
+    },
+    "mixing": {
+      "title": "MIXAGEM",
+      "description": [
+        "Mixar é revelar o potencial escondido de uma música.",
+        "Nosso trabalho é equilibrar, limpar, destacar e dar vida a cada elemento da sua gravação.",
+        "Mixamos com atenção aos detalhes, respeitando sua estética e intenção sonora.",
+        "Aplicamos técnicas como equalização, compressão, automação e espacialização para entregar um som coeso, dinâmico e impactante em diferentes sistemas de reprodução."
+      ]
+    },
+    "mastering": {
+      "title": "MASTERIZAÇÃO",
+      "description": [
+        "Masterizar é lapidar a obra para o mundo.",
+        "Finalizamos seu som com consistência e clareza, preparando-o para distribuição digital, streaming, rádio ou mídia física.",
+        "Trabalhamos para preservar sua identidade sonora, trazendo brilho e uniformidade ao material.",
+        "Aplicamos processamento final como equalização sutil, compressão multibanda, limitação e normalização de loudness, de acordo com os padrões atuais da indústria."
+      ]
+    },
+    "workshop": {
+      "title": "OFICINAS",
+      "description": [
+        "Aprender é abrir novas possibilidades criativas.",
+        "Em breve, ofereceremos oficinas sobre composição, gravação, mixagem e produção musical.",
+        "Queremos compartilhar conhecimento de forma acessível, prática e inspiradora.",
+        "Fique atento — logo teremos novidades para quem quer se desenvolver no universo da música."
+      ]
+    },
+    "shop": {
+      "title": "LOJA",
+      "description": [
+        "Música também se vive fora do som.",
+        "Nossa loja ainda não está disponível, mas logo você poderá encontrar produtos exclusivos relacionados ao Humpback Studio.",
+        "Estamos preparando uma seleção de itens que refletem nosso estilo e essência.",
+        "Em breve, traremos novidades com equipamentos, acessórios, roupas e mais."
+      ]
+    }
   }
 }

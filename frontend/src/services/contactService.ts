@@ -3,7 +3,6 @@ import axios, { AxiosError } from "axios";
 export interface ContactRequest {
   name: string;
   email: string;
-  telephone: string;
   message: string;
 }
 
@@ -14,9 +13,17 @@ export interface ApiError {
   details: string[];
 }
 
-export const sendContactMessage = async (data: ContactRequest): Promise<void> => {
+export const sendContactMessage = async (
+  data: ContactRequest,
+  lang: string
+): Promise<void> => {
   try {
-    await axios.post("/api/v1/contacts", data);
+    await axios.post("/api/v1/contacts", data, {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Language": lang,
+      },
+    });
   } catch (error) {
     const err = error as AxiosError<{ error: ApiError }>;
     if (err.response?.data?.error) {

@@ -5,6 +5,8 @@ export const TRANSLATION_KEYS = {
       GEAR: "nav.gear",
       GALLERY: "nav.gallery",
       BOOKING: "nav.booking",
+      WORKSHOP: "nav.workshop",
+      SHOP: "nav.shop",
       CONTACT: "nav.contact",
     },
     LANGUAGE: "language",
@@ -21,8 +23,35 @@ export const TRANSLATION_KEYS = {
       TITLE: "news_panel.title",
       EMPTY: "news_panel.empty",
     },
+    HIGHLIGHT: {
+      COMPOSITION: {
+        TITLE: "highlight.composition.title",
+        DESCRIPTION: "highlight.composition.description",
+      },
+      RECORDING: {
+        TITLE: "highlight.recording.title",
+        DESCRIPTION: "highlight.recording.description",
+      },
+      MIXING: {
+        TITLE: "highlight.mixing.title",
+        DESCRIPTION: "highlight.mixing.description",
+      },
+      MASTERING: {
+        TITLE: "highlight.mastering.title",
+        DESCRIPTION: "highlight.mastering.description",
+      },
+      WORKSHOPS: {
+        TITLE: "highlight.workshop.title",
+        DESCRIPTION: "highlight.workshop.description",
+      },
+      SHOP: {
+        TITLE: "highlight.shop.title",
+        DESCRIPTION: "highlight.shop.description",
+      }
+    }
   },
   GEAR: {
+    TITLE: "title",
     INTRO: {
       TITLE: "intro.title",
       P1: "intro.p1",

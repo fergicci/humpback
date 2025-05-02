@@ -8,8 +8,8 @@ const Contact: React.FC = () => {
   const { i18n } = useTranslation();
   const { t } = useTranslation(I18N_NAMESPACES.CONTACT);
 
-  const lang = i18n.language.toLowerCase();
-  const suffix = lang === "pt-br" ? "PT_BR" : "EN";
+  const lang = i18n.language;
+  const suffix = lang === "pt-BR" ? "PT_BR" : "EN";
 
   const addressLine = import.meta.env[
     `VITE_APPLICATION_CONTACT_ADDRESSLINE_${suffix}`
@@ -22,13 +22,13 @@ const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    telephone: "",
     message: "",
   });
 
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [wasValidated, setWasValidated] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -38,19 +38,25 @@ const Contact: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors([]);
+    setErrors({});
     setSuccess(false);
     setSubmitting(true);
+    setWasValidated(true);
 
     try {
-      await sendContactMessage(formData);
+      await sendContactMessage(formData, lang);
       setSuccess(true);
-      setFormData({ name: "", email: "", telephone: "", message: "" });
+      setFormData({ name: "", email: "", message: "" });
     } catch (err: any) {
       if (err?.details?.length) {
-        setErrors(err.details);
+        const fieldErrors: Record<string, string> = {};
+        err.details.forEach((entry: string) => {
+          const [field, message] = entry.split(":").map((s) => s.trim());
+          fieldErrors[field] = message;
+        });
+        setErrors(fieldErrors);
       } else {
-        setErrors([t(TRANSLATION_KEYS.CONTACT.FORM.GENERIC_ERROR)]);
+        setErrors({ general: t(TRANSLATION_KEYS.CONTACT.FORM.GENERIC_ERROR) });
       }
     } finally {
       setSubmitting(false);
@@ -103,13 +109,9 @@ const Contact: React.FC = () => {
               </Alert>
             )}
 
-            {errors.length > 0 && (
-              <Alert variant="danger" dismissible onClose={() => setErrors([])}>
-                <ul className="mb-0">
-                  {errors.map((e, idx) => (
-                    <li key={idx}>{e}</li>
-                  ))}
-                </ul>
+            {errors.general && (
+              <Alert variant="danger" dismissible onClose={() => setErrors({})}>
+                {errors.general}
               </Alert>
             )}
             <Form.Group className="mb-3" controlId="formName">
@@ -118,7 +120,12 @@ const Contact: React.FC = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                isInvalid={!!errors.name}
+                isValid={wasValidated && !errors.name && formData.name.length > 0}
               />
+              <Form.Control.Feedback type="invalid">
+                {errors.name}
+              </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formEmail">
               <Form.Label>{t(TRANSLATION_KEYS.CONTACT.FORM.EMAIL)}</Form.Label>
@@ -126,15 +133,12 @@ const Contact: React.FC = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                isInvalid={!!errors.email}
+                isValid={wasValidated && !errors.email && formData.email.length > 0}
               />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formPhone">
-              <Form.Label>{t(TRANSLATION_KEYS.CONTACT.FORM.PHONE)}</Form.Label>
-              <Form.Control
-                name="telephone"
-                value={formData.telephone}
-                onChange={handleChange}
-              />
+              <Form.Control.Feedback type="invalid">
+                {errors.email}
+              </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formMessage">
               <Form.Label>
@@ -146,9 +150,14 @@ const Contact: React.FC = () => {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
+                isInvalid={!!errors.message}
+                isValid={wasValidated && !errors.message && formData.message.length > 0}
                 placeholder={t(TRANSLATION_KEYS.CONTACT.FORM.PLACEHOLDER)}
                 style={{ minHeight: "200px" }}
               />
+              <Form.Control.Feedback type="invalid">
+                {errors.message}
+              </Form.Control.Feedback>
             </Form.Group>
             <Button type="submit" disabled={submitting}>
               {t(TRANSLATION_KEYS.CONTACT.FORM.SUBMIT)}

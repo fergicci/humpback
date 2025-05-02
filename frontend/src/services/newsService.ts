@@ -20,11 +20,21 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export async function getNews(lang: string, page = 1, size = 10): Promise<NewsItem[]> {
+export async function getNews(
+  lang: string,
+  page = 1,
+  size = 10
+): Promise<NewsItem[]> {
   try {
-    const response = await axios.get<ApiResponse<PagedResponse<NewsItem>>>(`/api/v1/news`, {
-      params: { lang, page, size },
-    });
+    const response = await axios.get<ApiResponse<PagedResponse<NewsItem>>>(
+      "/api/v1/news",
+      {
+        params: { page, size },
+        headers: {
+          "Accept-Language": lang,
+        },
+      }
+    );
 
     if (response.data.success) {
       return response.data.data.content || [];

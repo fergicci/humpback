@@ -72,7 +72,6 @@ public class ContactController {
                 .id(contact.getId())
                 .name(contact.getName())
                 .email(contact.getEmail())
-                .telephone(contact.getTelephone())
                 .message(contact.getMessage())
                 .createdAt(contact.getCreatedAt())
                 .read(contact.getRead())
