@@ -1,0 +1,10 @@
+{
+  "welcome": {
+    "message": "Bem-vindo",
+    "greetings": "Onde o som encontra a alma. Crie. Grave. Mixe. Faça música."
+  },
+  "news_panel": {
+    "title": "Últimas Notícias",
+    "empty": "Nenhuma novidade no momento. Fique ligado!"
+  }
+}

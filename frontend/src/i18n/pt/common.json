@@ -1,0 +1,15 @@
+{
+    "nav": {
+      "home": "Início",
+      "gear": "Equipamentos",
+      "gallery": "Galeria",
+      "booking": "Agendamento",
+      "workshop": "Oficina",
+      "shopping": "Loja",
+      "contact": "Contato"
+    },
+    "language": "Idioma",
+    "not_found": {
+        "error": "Oops! Pagina não encontrada."
+    }
+}
