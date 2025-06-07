@@ -1,35 +1,40 @@
 package studio.humpback.backend.service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.annotation.PostConstruct;
-
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import studio.humpback.backend.exception.PasswordExpiredException;
+import studio.humpback.backend.exception.ResourceNotFoundException;
+import studio.humpback.backend.exception.UserAccountLockedException;
 import studio.humpback.backend.model.User;
 import studio.humpback.backend.model.UserRole;
 import studio.humpback.backend.repository.UserRepository;
-import studio.humpback.backend.exception.AuthorizationException;
-import studio.humpback.backend.exception.ResourceNotFoundException;
-
-import java.util.Optional;
-import java.time.Instant;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     private static final String USER_NOT_FOUND = "User not found";
+    private static final String USER_DISABLED = "User disabled";
     private static final String INVALID_PASSWORD = "Invalid password";
+    private static final String EXPIRED_PASSWORD = "Expired password";
+    private static final String USER_ACCOUNT_LOCKED = "User Account Locked";
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -45,6 +50,12 @@ public class AuthService {
 
     @Value("${sysadmin.password}")
     private String sysadminPassword;
+
+    @Value("${security.user-accounts.max-number-of-attempts:3}")
+    private Integer maxNumberOfAttempts;
+
+    @Value("${security.user-accounts.password-expiration-days:90}")
+    private Integer passwordExpirationDays;
 
     @PostConstruct
     public void createSysadminIfNeeded() {
@@ -63,7 +74,9 @@ public class AuthService {
                 .password(passwordEncoder.encode(sysadminPassword))
                 .roles(Collections.singletonList(UserRole.ADMIN))
                 .createdAt(Instant.now())
-                .passwordExpiredAt(Instant.now())
+                .passwordExpiredAt(Instant.now()
+                        .plus(passwordExpirationDays, ChronoUnit.DAYS))
+                .disabled(Boolean.FALSE)
                 .build();
 
         userRepository.save(sysadmin);
@@ -80,9 +93,22 @@ public class AuthService {
 
         User user = userOptional.get();
 
-        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new BadCredentialsException(INVALID_PASSWORD);
+        if (user.getDisabled()) {
+            logger.warn("[AUTH] Account is disabled for user '{}'.", user.getUsername());
+            throw new UserAccountLockedException(USER_DISABLED);
         }
+
+        if (user.isAccountLocked()) {
+            logger.warn("[AUTH] Account is locked for user '{}'.", user.getUsername());
+            throw new UserAccountLockedException(USER_ACCOUNT_LOCKED);
+        }
+
+        if (user.isPasswordExpired()) {
+            logger.warn("[AUTH] Password is expired for user '{}'.", user.getUsername());
+            throw new PasswordExpiredException(EXPIRED_PASSWORD);
+        }
+
+        validatePassword(rawPassword, user);
 
         user.setLastLogin(Instant.now());
         userRepository.save(user);
@@ -93,5 +119,37 @@ public class AuthService {
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
+    }
+
+    private void validatePassword(String rawPassword, User user) {
+        if (passwordEncoder.matches(rawPassword, user.getPassword())) {
+            return;
+        }
+
+        user.setNumberOfFailedAttempts(
+                Optional.ofNullable(user.getNumberOfFailedAttempts()).orElse(0) + 1);
+
+        if (user.getNumberOfFailedAttempts() > maxNumberOfAttempts) {
+            user.setAccountLocked(true);
+        }
+
+        userRepository.save(user);
+
+        logger.warn("[AUTH] Failed login attempt for user '{}'. Attempts: {}", user.getUsername(),
+                user.getNumberOfFailedAttempts());
+        throw new BadCredentialsException(INVALID_PASSWORD);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = getUserByUsername(username);
+
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRoles().stream().map(Enum::name).toArray(String[]::new))
+                .accountLocked(user.isAccountLocked())
+                .disabled(user.getDisabled())
+                .build();
     }
 }

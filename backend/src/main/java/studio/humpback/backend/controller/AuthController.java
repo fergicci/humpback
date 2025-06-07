@@ -8,7 +8,6 @@ import studio.humpback.backend.dto.ApiResponse;
 import studio.humpback.backend.dto.LoginRequest;
 import studio.humpback.backend.dto.UserResponse;
 import studio.humpback.backend.model.User;
-import studio.humpback.backend.repository.UserRepository;
 import studio.humpback.backend.service.AuthService;
 import studio.humpback.backend.security.JwtTokenProvider;
 
@@ -18,7 +17,6 @@ import studio.humpback.backend.security.JwtTokenProvider;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
