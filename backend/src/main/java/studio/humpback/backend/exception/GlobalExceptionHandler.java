@@ -52,8 +52,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(apiError));
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException ex) {
+    @ExceptionHandler({
+        AuthenticationException.class,
+        PasswordExpiredException.class,
+        UserAccountLockedException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(RuntimeException ex) {
         log.error("Authentication error: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication failed", ex.getMessage());
     }
