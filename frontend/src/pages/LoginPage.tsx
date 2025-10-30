@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 
 type FormValues = {
@@ -11,7 +11,9 @@ type FormValues = {
 
 export default function LoginPage() {
   const { signin } = useAuth();
+  const location = useLocation() as any;
   const navigate = useNavigate();
+  const from = location.state?.from?.pathname || "/admin/contacts";
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -34,12 +36,12 @@ export default function LoginPage() {
       if (data.rememberMe) localStorage.setItem("hb_remember", "1");
       else localStorage.removeItem("hb_remember");
 
-      await signin(data.username, data.password);
-      navigate("/admin/contacts"); // or "/" if you prefer
+      await signin(data.username.trim(), data.password, data.rememberMe);
+      navigate(from, { replace: true });
     } catch (e: any) {
       setErrorMsg(e?.message ?? "Login failed");
     } finally {
-      resetField("password"); // clear sensitive value
+      resetField("password");
       setSubmitting(false);
     }
   };
@@ -51,7 +53,9 @@ export default function LoginPage() {
           <div className="card shadow-sm">
             <div className="card-body p-4">
               <h5 className="card-title mb-1 fw-semibold">Sign in</h5>
-              <p className="text-muted mb-3">Use your Humpback Studio admin account.</p>
+              <p className="text-muted mb-3">
+                Use your Humpback Studio admin account.
+              </p>
 
               {errorMsg && (
                 <div className="alert alert-danger py-2" role="alert">
@@ -60,7 +64,6 @@ export default function LoginPage() {
               )}
 
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                {/* Username */}
                 <div className="mb-3">
                   <label htmlFor="username" className="form-label">
                     Username
@@ -68,7 +71,9 @@ export default function LoginPage() {
                   <input
                     id="username"
                     type="text"
-                    className={`form-control ${errors.username ? "is-invalid" : ""}`}
+                    className={`form-control ${
+                      errors.username ? "is-invalid" : ""
+                    }`}
                     autoComplete="username"
                     autoFocus
                     {...register("username", {
@@ -77,11 +82,12 @@ export default function LoginPage() {
                     })}
                   />
                   {errors.username && (
-                    <div className="invalid-feedback">{errors.username.message}</div>
+                    <div className="invalid-feedback">
+                      {errors.username.message}
+                    </div>
                   )}
                 </div>
 
-                {/* Password with show/hide */}
                 <div className="mb-3">
                   <label htmlFor="password" className="form-label">
                     Password
@@ -90,18 +96,25 @@ export default function LoginPage() {
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      className={`form-control ${errors.password ? "is-invalid" : ""}`}
+                      className={`form-control ${
+                        errors.password ? "is-invalid" : ""
+                      }`}
                       autoComplete="current-password"
                       {...register("password", {
                         required: "Password is required",
-                        minLength: { value: 6, message: "Minimum 6 characters" },
+                        minLength: {
+                          value: 6,
+                          message: "Minimum 6 characters",
+                        },
                       })}
                     />
                     <button
                       type="button"
                       className="btn btn-outline-secondary"
                       onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? "Hide" : "Show"}
                     </button>
@@ -113,7 +126,6 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Remember + links */}
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <div className="form-check">
                     <input
@@ -126,12 +138,15 @@ export default function LoginPage() {
                       Remember me
                     </label>
                   </div>
-                  <a href="#" onClick={(e) => e.preventDefault()} className="small">
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    className="small"
+                  >
                     Forgot password?
                   </a>
                 </div>
 
-                {/* Submit */}
                 <button
                   type="submit"
                   className="btn btn-primary w-100"
@@ -152,7 +167,11 @@ export default function LoginPage() {
                 </button>
 
                 <div className="text-center mt-3">
-                  <a href="#" onClick={(e) => e.preventDefault()} className="small">
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    className="small"
+                  >
                     Don’t have an account? Contact the admin
                   </a>
                 </div>

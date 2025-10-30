@@ -1,6 +1,6 @@
 // services/contactService.ts
 import type { AxiosError } from "axios";
-import { api, ApiError, ApiResponse, PagedResponse } from "./api";
+import { api, ApiError, ApiResponse, PagedResponse, handleError } from "./api";
 
 export interface ContactItem {
   id: string;
@@ -23,8 +23,7 @@ export async function sendContactMessage(payload: ContactRequest, lang: string):
       headers: { "Content-Type": "application/json", "Accept-Language": lang },
     });
   } catch (e) {
-    const err = e as AxiosError<ApiError>;
-    throw err.response?.data ?? fallbackApiError(err);
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
   }
 }
 
@@ -34,25 +33,26 @@ export async function getContacts(
   size = 20
 ): Promise<PagedResponse<ContactItem>> {
   try {
-    const { data } = await api.get<ApiResponse<PagedResponse<ContactItem>>>("/contacts", {
+    const { data: resp } = await api.get<ApiResponse<PagedResponse<ContactItem>>>("/contacts", {
       params: { page, size },
       headers: { "Accept-Language": lang },
     });
-    return data.data;
+    if (resp.success) return resp.data;   // <- narrowed
+    throw resp.error;
   } catch (e) {
-    const err = e as AxiosError<ApiError>;
-    throw err.response?.data ?? fallbackApiError(err);
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
   }
 }
 
 export async function getContactById(id: string, lang: string): Promise<ContactItem | null> {
   try {
-    const { data } = await api.get<ApiResponse<ContactItem>>(`/contacts/${id}`, {
+    const { data: resp } = await api.get<ApiResponse<ContactItem>>(`/contacts/${id}`, {
       headers: { "Accept-Language": lang },
     });
-    return data.data;
-  } catch {
-    return null;
+    if (resp.success) return resp.data;   // <- narrowed
+    throw resp.error;
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
   }
 }
 
@@ -70,13 +70,4 @@ export async function markContactUnread(id: string): Promise<void> {
 
 export async function deleteContact(id: string): Promise<void> {
   await api.delete(`/contacts/${id}`);
-}
-
-function fallbackApiError(err: AxiosError<ApiError>): ApiError {
-  return {
-    timestamp: new Date().toISOString(),
-    code: err.response?.status ?? 0,
-    message: err.message || "Network error",
-    details: [],
-  };
 }

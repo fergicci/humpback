@@ -351,21 +351,23 @@ export default function ContactsPage() {
                 {selected.message}
               </div>
             </div>
-            {!selected.read && (
-              <button
-                className="btn btn-success"
-                onClick={() => handleMarkRead(selected.id)}
-              >
-                Mark as read
-              </button>
-            )}
+            <div className="d-flex gap-2">
+              {!selected.read && (
+                <button
+                  className="btn btn-success"
+                  onClick={() => handleMarkRead(selected.id)}
+                >
+                  Mark as read
+                </button>
+              )}
 
-            <button
-              className="btn btn-danger"
-              onClick={() => handleDelete(selected.id)}
-            >
-              Delete
-            </button>
+              <button
+                className="btn btn-danger"
+                onClick={() => handleDelete(selected.id)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
