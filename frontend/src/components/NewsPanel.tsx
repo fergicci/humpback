@@ -15,8 +15,8 @@ const NewsPanel: React.FC = () => {
     const loadNews = async () => {
       try {
         const lang = i18n.language;
-        const news = await getNews(getBaseLang(lang), 1, 3);
-        setNewsItems(news);
+        const pageRes = await getNews(getBaseLang(lang), 1, 3);
+        setNewsItems(pageRes.content ?? []);
       } catch (error) {
         console.error("Error fetching news:", error);
       } finally {

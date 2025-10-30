@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api, ApiResponse, PagedResponse } from "./api";
 
 export interface NewsItem {
   id: string;
@@ -7,43 +7,27 @@ export interface NewsItem {
   createdAt: string;
 }
 
-export interface PagedResponse<T> {
-  content: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-}
-
 export async function getNews(
   lang: string,
   page = 1,
   size = 10
-): Promise<NewsItem[]> {
+): Promise<PagedResponse<NewsItem>> {
   try {
-    const response = await axios.get<ApiResponse<PagedResponse<NewsItem>>>(
-      "/api/v1/news",
+    const { data } = await api.get<ApiResponse<PagedResponse<NewsItem>>>(
+      "/news", // baseURL already includes /api/v1
       {
         params: { page, size },
-        headers: {
-          "Accept-Language": lang,
-        },
+        headers: { "Accept-Language": lang },
       }
     );
 
-    if (response.data.success) {
-      return response.data.data.content || [];
-    } else {
-      console.error("Failed to fetch news: success=false");
-      return [];
+    if (data?.success && data.data) {
+      return data.data;
     }
-  } catch (error) {
-    console.error("Error fetching news:", error);
-    return [];
+  } catch (err) {
+    console.error("Error fetching news:", err);
   }
+
+  // Safe fallback
+  return { content: [], page, size, totalElements: 0, totalPages: 0 };
 }

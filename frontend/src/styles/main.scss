@@ -128,3 +128,50 @@ h3,
 .modal-header .btn-close {
   filter: invert(1);
 }
+
+
+.contacts-admin {
+
+  .text-warning { color: #8c6000 !important; }
+
+  .btn-icon {
+    --size: 32px;
+    width: var(--size);
+    height: var(--size);
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-width: 1px;
+    border-color: #343a40 !important;
+  }
+
+  .btn-outline-warning.btn-icon {
+    color: #8c6000;
+    border-color: #343a40 !important;
+
+    &:hover,
+    &:focus {
+      background-color: #8c6000;
+      color: #fff;
+      border-color: #343a40 !important;
+    }
+
+    &:active {
+      background-color: #805a00;
+      color: #fff;
+      border-color: #1f2328 !important;
+    }
+  }
+
+  .btn-outline-primary.btn-icon,
+  .btn-outline-success.btn-icon {
+    border-color: #343a40 !important;
+
+    &:hover,
+    &:focus {
+      border-color: #343a40 !important;
+    }
+  }
+}

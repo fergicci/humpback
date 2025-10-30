@@ -1,18 +1,23 @@
 package studio.humpback.backend.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import studio.humpback.backend.model.Contact;
-import studio.humpback.backend.repository.ContactRepository;
-import studio.humpback.backend.dto.ContactRequest;
 import java.time.Instant;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import studio.humpback.backend.dto.ContactRequest;
+import studio.humpback.backend.exception.ResourceNotFoundException;
+import studio.humpback.backend.model.Contact;
+import studio.humpback.backend.repository.ContactRepository;
 
 @Service
 @RequiredArgsConstructor
 public class ContactService {
+
+    private final static String CONTACT_ID_NOT_FOUND = "Contact %s not found!";
 
     private final ContactRepository contactRepository;
 
@@ -34,12 +39,25 @@ public class ContactService {
         return contactRepository.findAll(pageable);
     }
 
-    public void deleteById(String id) {
+    public void delete(String id) {
         contactRepository.deleteById(id);
     }
 
     public Contact getById(String id) {
         return contactRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Contact not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format(CONTACT_ID_NOT_FOUND, id)));
+    }
+
+    public void setRead(String id, Boolean desiredRead) {
+        Contact contact = contactRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format(CONTACT_ID_NOT_FOUND, id)));
+
+        if (contact.getRead().equals(desiredRead))
+            return;
+
+        contact.setRead(desiredRead);
+        contactRepository.save(contact);
     }
 }

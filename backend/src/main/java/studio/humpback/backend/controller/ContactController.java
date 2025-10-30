@@ -38,10 +38,9 @@ public class ContactController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(
-            page - 1,
-            size,
-            Sort.by(Sort.Direction.DESC, "createdAt")
-        );
+                page - 1,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Contact> contactsPage = contactService.getPage(pageable);
 
         List<ContactResponse> content = contactsPage.getContent()
@@ -63,7 +62,14 @@ public class ContactController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiResponse<Void> deleteContact(@PathVariable String id) {
-        contactService.deleteById(id);
+        contactService.delete(id);
+        return ApiResponse.success();
+    }
+
+    @PatchMapping("/{id}/read/{desiredRead}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ApiResponse<Object> setContactRead(@PathVariable String id, @PathVariable Boolean desiredRead) {
+        contactService.setRead(id, desiredRead);
         return ApiResponse.success();
     }
 
