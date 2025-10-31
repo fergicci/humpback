@@ -121,7 +121,9 @@ const Contact: React.FC = () => {
                 value={formData.name}
                 onChange={handleChange}
                 isInvalid={!!errors.name}
-                isValid={wasValidated && !errors.name && formData.name.length > 0}
+                isValid={
+                  wasValidated && !errors.name && formData.name.length > 0
+                }
               />
               <Form.Control.Feedback type="invalid">
                 {errors.name}
@@ -134,7 +136,9 @@ const Contact: React.FC = () => {
                 value={formData.email}
                 onChange={handleChange}
                 isInvalid={!!errors.email}
-                isValid={wasValidated && !errors.email && formData.email.length > 0}
+                isValid={
+                  wasValidated && !errors.email && formData.email.length > 0
+                }
               />
               <Form.Control.Feedback type="invalid">
                 {errors.email}
@@ -151,7 +155,9 @@ const Contact: React.FC = () => {
                 value={formData.message}
                 onChange={handleChange}
                 isInvalid={!!errors.message}
-                isValid={wasValidated && !errors.message && formData.message.length > 0}
+                isValid={
+                  wasValidated && !errors.message && formData.message.length > 0
+                }
                 placeholder={t(TRANSLATION_KEYS.CONTACT.FORM.PLACEHOLDER)}
                 style={{ minHeight: "200px" }}
               />

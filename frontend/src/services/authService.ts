@@ -1,5 +1,5 @@
 import type { AxiosError } from "axios";
-import { api, ApiResponse } from "./api";
+import { api, ApiError, ApiResponse, handleError } from "./api";
 
 const AUTH_STORAGE_KEY = "hb_auth";
 const USER_STORAGE_KEY = "hb_user";
@@ -115,35 +115,41 @@ export async function login(
   password: string,
   remember = false
 ): Promise<User> {
-  const { data } = await api.post<ApiResponse<LoginData>>("/auth/login", {
-    username,
-    password,
-  });
+  try {
+    const { data } = await api.post<ApiResponse<LoginData>>("/auth/login", {
+      username,
+      password,
+    });
 
-  if (!data?.success) throw new Error("Login failed");
+    if (!data?.success) throw new Error("Login failed");
 
-  const maybeToken = data.data?.token;
-  const token =
-    typeof maybeToken === "string" && maybeToken.length > 0 ? maybeToken : null;
+    const maybeToken = data.data?.token;
+    const token =
+      typeof maybeToken === "string" && maybeToken.length > 0
+        ? maybeToken
+        : null;
 
-  inMemoryAccessToken = token;
+    inMemoryAccessToken = token;
 
-  if (remember && token) {
-    saveTokenToStorage(token);
-  } else {
-    saveTokenToStorage(null);
+    if (remember && token) {
+      saveTokenToStorage(token);
+    } else {
+      saveTokenToStorage(null);
+    }
+
+    const me = (await fetchMe()) ?? toUser(data.data);
+    sessionUser = me;
+
+    if (remember) {
+      saveUserToStorage(me);
+    } else {
+      saveUserToStorage(null);
+    }
+
+    return me;
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
   }
-
-  const me = (await fetchMe()) ?? toUser(data.data);
-  sessionUser = me;
-
-  if (remember) {
-    saveUserToStorage(me);
-  } else {
-    saveUserToStorage(null);
-  }
-
-  return me;
 }
 
 export async function logout(): Promise<void> {

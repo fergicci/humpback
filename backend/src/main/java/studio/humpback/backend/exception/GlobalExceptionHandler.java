@@ -24,7 +24,6 @@ import studio.humpback.backend.dto.ApiResponse;
 public class GlobalExceptionHandler {
 
     private static final String VALIDATION_FAILED = "Validation failed";
-    private static final String NO_DETAIL = "";
 
     private final MessageSource messageSource;
 
@@ -53,31 +52,39 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.error("Illegal argument error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), NO_DETAIL);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException ex) {
         log.error("Authentication error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), NO_DETAIL);
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
-    @ExceptionHandler(AuthorizationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAuthorizationException(AuthorizationException ex) {
+    @ExceptionHandler({
+            AuthorizationException.class,
+            UserAccountLockedException.class,
+            PasswordExpiredException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleAuthorizationException(RuntimeException ex) {
         log.error("Authorization error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage(), NO_DETAIL);
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(ResourceNotFoundException ex) {
         log.error("Resource not found: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), NO_DETAIL);
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
         log.error("Internal server error", ex);
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), NO_DETAIL);
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
+
+    private ResponseEntity<ApiResponse<Void>> buildErrorResponse(HttpStatus status, String message) {
+        return buildErrorResponse(status, message, null);
     }
 
     private ResponseEntity<ApiResponse<Void>> buildErrorResponse(HttpStatus status, String message, String detail) {
@@ -85,7 +92,7 @@ public class GlobalExceptionHandler {
                 .timestamp(new Date())
                 .code(status.value())
                 .message(message)
-                .details(Collections.singletonList(detail))
+                .details(detail != null ? Collections.singletonList(detail) : null)
                 .build();
 
         return ResponseEntity.status(status).body(ApiResponse.error(error));

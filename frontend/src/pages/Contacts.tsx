@@ -91,12 +91,6 @@ export default function ContactsPage() {
       setRows((prev) => prev.filter((r) => r.id !== id));
       setSelected((prev) => (prev && prev.id === id ? null : prev));
       setTotalElements((prev) => (prev > 0 ? prev - 1 : 0));
-
-      // if you want to handle the case "we deleted the last item on the page"
-      // and page is now empty while there are still previous pages, you could:
-      // if (rows.length === 1 && page > 1) {
-      //   setPage(p => p - 1);
-      // }
     } catch (e) {
       console.error("Failed to delete contact:", e);
     }
