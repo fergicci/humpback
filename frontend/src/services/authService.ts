@@ -88,6 +88,10 @@ api.interceptors.response.use(
     if (status === 401 && !isAuthRoute) {
       await doLocalLogout();
       broadcastAuthChange("logout");
+
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.replace("/login");
+      }
     }
     return Promise.reject(err);
   }
