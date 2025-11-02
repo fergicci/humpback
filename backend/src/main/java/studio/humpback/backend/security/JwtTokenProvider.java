@@ -1,18 +1,20 @@
 package studio.humpback.backend.security;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
-
-import jakarta.annotation.PostConstruct;
-
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import studio.humpback.backend.model.UserRole;
 
 @Component
@@ -23,6 +25,9 @@ public class JwtTokenProvider {
 
     @Value("${jwt.expiration-ms}")
     private Long validityInMilliseconds;
+
+    @Value("${jwt.clock-skew-seconds:30}")
+    private long clockSkewSeconds;
 
     private Key secretKey;
 
@@ -72,9 +77,15 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .setAllowedClockSkewSeconds(clockSkewSeconds)
+                    .build()
+                    .parseClaimsJws(token);
             return true;
-        } catch (Exception ex) {
+        } catch (ExpiredJwtException e) {
+            return false;
+        } catch (UnsupportedJwtException | MalformedJwtException | SecurityException | IllegalArgumentException e) {
             return false;
         }
     }

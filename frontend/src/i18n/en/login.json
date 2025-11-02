@@ -1,0 +1,14 @@
+{
+  "title": "Get in Touch",
+  "form": {
+    "name": "Full Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "message": "Message",
+    "placeholder": "Tell us what you're looking for...",
+    "submit": "Send Message",
+    "not_accepting": "We're not accepting form submission at the moment. Feel free to send me a message on the mobile number!",
+    "generic_error": "An unexpected error occurred. Please try again later.",
+    "success": "Thank you for reaching out! We'll get back to you as soon as possible."
+  }
+}
