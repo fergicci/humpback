@@ -21,6 +21,8 @@ public class SecurityConfig {
     private static final String API_AUTH_LOGIN = "/api/v1/auth/login";
     private static final String API_CONTACTS = "/api/v1/contacts";
     private static final String API_BOOKINGS = "/api/v1/bookings";
+    private static final String API_BOOKINGS_TODAY = "/api/v1/bookings/today";
+    private static final String API_BOOKINGS_ON = "/api/v1/bookings/on";
     private static final String API_NEWS = "/api/v1/news";
     private static final String API_OPTIONS_ALL = "/**";
 
@@ -50,6 +52,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, API_AUTH_LOGIN).permitAll()
                         .requestMatchers(HttpMethod.POST, API_CONTACTS).permitAll()
                         .requestMatchers(HttpMethod.POST, API_BOOKINGS).permitAll()
+                        .requestMatchers(HttpMethod.GET, API_BOOKINGS_TODAY).permitAll()
+                        .requestMatchers(HttpMethod.GET, API_BOOKINGS_ON).permitAll()
                         .requestMatchers(HttpMethod.GET, API_NEWS).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, API_OPTIONS_ALL).permitAll()
                         .anyRequest().authenticated())

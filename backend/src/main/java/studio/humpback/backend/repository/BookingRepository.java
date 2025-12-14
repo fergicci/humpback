@@ -11,10 +11,8 @@ import studio.humpback.backend.model.Booking;
 @Repository
 public interface BookingRepository extends MongoRepository<Booking, String> {
 
-    public List<Booking> findByBookingAtBetween(    
-        Instant startDateTime, 
-        Instant endDateTime);
-    
+    public List<Booking> findByBookingAtBetween(Instant startDateTime, Instant endDateTime);
+    public List<Booking> findByBookingAtLessThanAndEndAtGreaterThan(Instant end, Instant start);
     public List<Booking> findByEmail(String email);
     
 }

@@ -1,7 +1,13 @@
 package studio.humpback.backend.controller;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -13,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +41,7 @@ import studio.humpback.backend.service.BookingService;
 @RequiredArgsConstructor
 public class BookingController {
 
-        private BookingService bookingService;
+        private final BookingService bookingService;
 
         @GetMapping
         @PreAuthorize("hasAuthority('ADMIN')")
@@ -67,7 +74,9 @@ public class BookingController {
 
         @GetMapping("/today")
         public ApiResponse<List<BookingResponse>> getTodayBookings() {
-                List<Booking> bookings = bookingService.getTodayBookings();
+                InstantRange range = resolveRange(Optional.empty(), Optional.empty());
+                List<Booking> bookings = bookingService.getBookingsBetween(range.from(), range.to());
+
                 List<BookingResponse> responses = bookings.stream()
                                 .map(this::toRestrictResponse)
                                 .collect(Collectors.toList());
@@ -75,14 +84,18 @@ public class BookingController {
         }
 
         @GetMapping("/on")
-        public ApiResponse<List<BookingResponse>> getTodayBookings(
-                        @RequestParam("from") String from,
-                        @RequestParam("to") String to
-        ) {
-                List<Booking> bookings = bookingService.getBetweenBookings(from, to);
+        public ApiResponse<List<BookingResponse>> getBookingsBetween(
+                        @RequestParam Optional<Instant> from,
+                        @RequestParam Optional<Instant> to) {
+
+                InstantRange range = resolveRange(from, to);
+
+                List<Booking> bookings = bookingService.getBookingsBetween(range.from(), range.to());
+
                 List<BookingResponse> responses = bookings.stream()
                                 .map(this::toRestrictResponse)
                                 .collect(Collectors.toList());
+
                 return ApiResponse.success(responses);
         }
 
@@ -100,25 +113,29 @@ public class BookingController {
 
         @DeleteMapping("/{id}")
         @PreAuthorize("hasAuthority('ADMIN')")
-        public ApiResponse<Void> deleteBooking(@RequestParam String id) {
+        public ApiResponse<Void> deleteBooking(@PathVariable String id) {
                 bookingService.delete(id);
                 return ApiResponse.success();
         }
 
         private BookingResponse toResponse(Booking booking) {
-                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                if (auth.getAuthorities().stream()
-                                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
-                        return toFullResponse(booking);
-                } else {
-                        return toRestrictResponse(booking);
-                }
+                boolean isAdmin = Optional
+                                .ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                                .filter(Authentication::isAuthenticated)
+                                .map(Authentication::getAuthorities)
+                                .stream()
+                                .flatMap(Collection::stream)
+                                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+
+                return isAdmin
+                                ? toFullResponse(booking)
+                                : toRestrictResponse(booking);
         }
 
         private BookingResponse toRestrictResponse(Booking booking) {
                 return BookingResponse.builder()
                                 .bookingAt(booking.getBookingAt())
-                                .numberOfHours(booking.getNumberOfHours())
+                                .endAt(booking.getEndAt())
                                 .build();
         }
 
@@ -129,10 +146,33 @@ public class BookingController {
                                 .email(booking.getEmail())
                                 .phone(booking.getPhone())
                                 .bookingAt(booking.getBookingAt())
-                                .numberOfHours(booking.getNumberOfHours())
+                                .endAt(booking.getEndAt())
                                 .bookingType(booking.getBookingType())
                                 .bookingRoom(booking.getBookingRoom())
                                 .hasBeenPayed(booking.getHasBeenPayed())
                                 .build();
+        }
+
+        private InstantRange resolveRange(Optional<Instant> from, Optional<Instant> to) {
+
+                ZoneId zone = ZoneOffset.UTC;
+
+                Instant start = from.orElseGet(() -> LocalDate.now(zone)
+                                .atStartOfDay(zone)
+                                .toInstant());
+
+                Instant end = to.orElseGet(() -> LocalDate.now(zone)
+                                .plusDays(1)
+                                .atStartOfDay(zone)
+                                .toInstant());
+
+                if (end.isBefore(start)) {
+                    throw new IllegalArgumentException("'to' must be after 'from'");
+                }
+
+                return new InstantRange(start, end);
+        }
+
+        record InstantRange(Instant from, Instant to) {
         }
 }

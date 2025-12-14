@@ -18,9 +18,12 @@ public class BookingResponse {
     private String email;
     private String phone;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     private Instant bookingAt;
-    private Integer numberOfHours;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant endAt;
+    
     private BookingType bookingType;
     private BookingRoom bookingRoom;
     private Boolean hasBeenPayed;

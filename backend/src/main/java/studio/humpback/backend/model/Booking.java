@@ -3,6 +3,7 @@ package studio.humpback.backend.model;
 import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -27,8 +28,12 @@ public class Booking {
     private String phone;
     private Instant createdAt;
     private Instant updatedAt;
+
+    @Indexed
     private Instant bookingAt;
-    private Integer numberOfHours;
+
+    @Indexed
+    private Instant endAt;
 
     @Field(name = "type")
     private BookingType bookingType;
@@ -38,4 +43,5 @@ public class Booking {
 
     @Builder.Default
     private Boolean hasBeenPayed = false;
+  
 }
