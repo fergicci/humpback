@@ -1,11 +1,16 @@
 BACKEND_DIR := backend
 FRONTEND_DIR := frontend
-BACKEND_IMAGE_NAME := humbpack-backend
+BACKEND_IMAGE_NAME := humpback-backend
 FRONTEND_IMAGE_NAME := humpback-frontend
 UID := $(shell id -u)
 GID := $(shell id -g)
 
-.PHONY: all clean compile test build run image
+.PHONY: all clean compile test build run stop restart image \
+        backend-clean frontend-clean \
+        backend-compile frontend-compile \
+        backend-test frontend-test \
+        backend-build frontend-build \
+        backend-image frontend-image
 
 all: clean compile test build run
 
@@ -41,12 +46,6 @@ frontend-build: frontend-compile
 
 build: backend-build frontend-build
 
-backend-run:
-	cd $(BACKEND_DIR) && ./gradlew bootRun
-
-frontend-run:
-	cd $(FRONTEND_DIR) && npm start
-
 run:
 	docker compose up -d
 
@@ -56,9 +55,9 @@ stop:
 restart: stop run
 
 backend-image:
-	docker build -t $(BACKEND_IMAGE_NAME) --build-arg UID=$(UID) --build-arg GID=$(GID) $(BACKEND_DIR)
+	cd $(BACKEND_DIR) && docker build --pull --rm -t $(BACKEND_IMAGE_NAME):latest .
 
 frontend-image:
-	docker build -t $(FRONTEND_IMAGE_NAME) --build-arg UID=$(UID) --build-arg GID=$(GID) $(FRONTEND_DIR)
+	cd $(FRONTEND_DIR) && docker build --pull --rm -t $(FRONTEND_IMAGE_NAME):latest .
 
 image: backend-image frontend-image
