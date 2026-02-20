@@ -40,7 +40,7 @@ public class ContactController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'READER')")
     public ApiResponse<PagedResponse<ContactResponse>> getContacts(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {

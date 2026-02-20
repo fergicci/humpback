@@ -2,7 +2,6 @@ package studio.humpback.backend.model;
 
 import java.time.Instant;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,8 +29,8 @@ public class User {
     @Builder.Default
     private Set<String> olderPasswords = Collections.emptySet();
 
-    private List<UserRole> roles;
-    private String fullName;
+    private Set<UserRole> roles;
+    private String fullname;
     private String email;
     private Instant createdAt;
     private Instant lastLogin;

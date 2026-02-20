@@ -2,9 +2,10 @@ package studio.humpback.backend.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -38,17 +39,17 @@ public class JwtTokenProvider {
                         .getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createToken(String username, List<UserRole> roles) {
+    public String createToken(String username, Set<UserRole> roles) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + validityInMilliseconds);
 
-        String rolesString = roles.stream()
+        List<String> roleNames = roles.stream()
                 .map(Enum::name)
-                .collect(Collectors.joining(","));
+                .toList();
 
         return Jwts.builder()
                 .setSubject(username)
-                .claim("roles", rolesString)
+                .claim("roles", roleNames)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(secretKey)
@@ -65,14 +66,32 @@ public class JwtTokenProvider {
     }
 
     public List<String> getRoles(String token) {
-        String rolesString = Jwts.parserBuilder()
+        var claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .get("roles", String.class);
+                .getBody();
 
-        return List.of(rolesString.split(","));
+        Object raw = claims.get("roles");
+        if (raw == null)
+            return List.of();
+
+        if (raw instanceof String s) {
+            return Arrays.stream(s.split(","))
+                    .map(String::trim)
+                    .filter(x -> !x.isBlank())
+                    .toList();
+        }
+
+        if (raw instanceof List<?> list) {
+            return list.stream()
+                    .map(String::valueOf)
+                    .map(String::trim)
+                    .filter(x -> !x.isBlank())
+                    .toList();
+        }
+
+        return List.of();
     }
 
     public boolean validateToken(String token) {

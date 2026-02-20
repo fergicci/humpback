@@ -11,8 +11,8 @@ COPY .env.local .env.production.local
 # Copy package files and install only production dependencies
 COPY package.json package-lock.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install only production dependencies without running audit/funding checks
+RUN npm ci --omit=dev --no-audit --no-fund
 
 # You can install one globally
 RUN npm install -g serve

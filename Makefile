@@ -4,8 +4,22 @@ BACKEND_IMAGE_NAME := humpback-backend
 FRONTEND_IMAGE_NAME := humpback-frontend
 UID := $(shell id -u)
 GID := $(shell id -g)
+PROD ?= false
+NO_CACHE ?= false
+DOCKER_PLATFORM :=
+DOCKER_CACHE_FLAGS :=
+
+ifeq ($(PROD),true)
+DOCKER_PLATFORM := --platform linux/amd64
+endif
+
+ifeq ($(NO_CACHE),true)
+DOCKER_CACHE_FLAGS := --no-cache
+endif
 
 .PHONY: all clean compile test build run stop restart image \
+        image-prod \
+        prune-build-cache \
         backend-clean frontend-clean \
         backend-compile frontend-compile \
         backend-test frontend-test \
@@ -26,7 +40,7 @@ backend-compile:
 	cd $(BACKEND_DIR) && ./gradlew compileJava
 
 frontend-compile:
-	cd $(FRONTEND_DIR) && npm install
+	cd $(FRONTEND_DIR) && npm ci --no-audit --no-fund
 
 compile: backend-compile frontend-compile
 
@@ -54,10 +68,20 @@ stop:
 
 restart: stop run
 
-backend-image:
-	cd $(BACKEND_DIR) && docker build --pull --rm -t $(BACKEND_IMAGE_NAME):latest .
+backend-image: backend-build
+	cd $(BACKEND_DIR) && docker build $(DOCKER_PLATFORM) $(DOCKER_CACHE_FLAGS) --pull --rm -t $(BACKEND_IMAGE_NAME):latest .
 
-frontend-image:
-	cd $(FRONTEND_DIR) && docker build --pull --rm -t $(FRONTEND_IMAGE_NAME):latest .
+frontend-image: frontend-build
+	cd $(FRONTEND_DIR) && docker build $(DOCKER_PLATFORM) $(DOCKER_CACHE_FLAGS) --pull --rm -t $(FRONTEND_IMAGE_NAME):latest .
 
 image: backend-image frontend-image
+
+image-prod:
+	$(MAKE) image PROD=true
+
+prune-build-cache:
+	docker builder prune -af
+	-docker buildx prune -af
+
+compress:
+	docker save $(BACKEND_IMAGE_NAME):latest $(FRONTEND_IMAGE_NAME):latest | gzip > humpback_images.tar.gz

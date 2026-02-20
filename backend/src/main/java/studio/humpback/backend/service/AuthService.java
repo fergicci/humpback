@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import studio.humpback.backend.dto.RegisterRequest;
 import studio.humpback.backend.exception.PasswordExpiredException;
 import studio.humpback.backend.exception.ResourceNotFoundException;
 import studio.humpback.backend.exception.UserAccountLockedException;
@@ -35,6 +37,7 @@ public class AuthService implements UserDetailsService {
     private static final String INVALID_PASSWORD = "Invalid password";
     private static final String EXPIRED_PASSWORD = "Expired password";
     private static final String USER_ACCOUNT_LOCKED = "User Account Locked";
+    private static final String USERNAME_ALREADY_EXISTS = "Username already exists";
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -69,10 +72,13 @@ public class AuthService implements UserDetailsService {
 
         User sysadmin = User.builder()
                 .username(sysadminUsername)
-                .fullName(sysadminFullname)
+                .fullname(sysadminFullname)
                 .email(sysadminEmail)
                 .password(passwordEncoder.encode(sysadminPassword))
-                .roles(Collections.singletonList(UserRole.ADMIN))
+                .roles(Collections
+                        .singletonList(UserRole.ADMIN)
+                        .stream()
+                        .collect(Collectors.toSet()))
                 .createdAt(Instant.now())
                 .passwordExpiredAt(Instant.now()
                         .plus(passwordExpirationDays, ChronoUnit.DAYS))
@@ -152,4 +158,29 @@ public class AuthService implements UserDetailsService {
                 .disabled(user.getDisabled())
                 .build();
     }
+
+    public void registerUser(RegisterRequest registerRequest) {
+        Optional<User> existingUser = userRepository.findByUsername(registerRequest.getUsername());
+
+        if (existingUser.isPresent()) {
+            throw new IllegalArgumentException(USERNAME_ALREADY_EXISTS);
+        }
+
+        User newUser = User.builder()
+                .username(registerRequest.getUsername())
+                .fullname(registerRequest.getFullname())
+                .email(registerRequest.getEmail())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .roles(Collections
+                        .singletonList(UserRole.READER)
+                        .stream()
+                        .collect(Collectors.toSet()))
+                .createdAt(Instant.now())
+                .passwordExpiredAt(Instant.now().plus(passwordExpirationDays, ChronoUnit.DAYS))
+                .disabled(Boolean.TRUE)
+                .build();
+
+        userRepository.save(newUser);
+    }
+
 }

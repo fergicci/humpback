@@ -1,8 +1,6 @@
 package studio.humpback.backend.dto;
 
-import java.time.Instant;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
@@ -29,8 +27,7 @@ public class BookingRequest {
 
     @NotNull(message = "{booking.request.bookingAt.required}")
     @Future(message = "{booking.request.bookingAt.future}")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssX")
-    private Instant bookingAt;
+    private Date bookingAt;
 
     @NotNull(message = "{booking.request.numberOfHours.required}")
     @Min(value = 2, message = "{booking.request.numberOfHours.min}")

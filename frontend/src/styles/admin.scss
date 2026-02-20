@@ -1,0 +1,159 @@
+@use "@coreui/coreui/scss/coreui" as * with (
+  $enable-deprecation-messages: false
+);
+
+// Base admin background
+body {
+  background-color: var(--cui-tertiary-bg);
+}
+
+// Admin wrapper
+.admin-wrapper {
+  width: 100%;
+  padding-inline: var(--cui-sidebar-occupy-start, 0)
+    var(--cui-sidebar-occupy-end, 0);
+  will-change: auto;
+  @include transition(padding 0.15s);
+}
+
+// Sidebar styles
+.admin-sidebar {
+  background: var(--cui-body-bg);
+  border-right: 0;
+
+  // icon rail sizing
+  width: 84px;
+  padding: 2rem 0.5rem 1rem;
+
+  .admin-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .nav-link {
+    // square icon button
+    width: 56px;
+    height: 56px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    // padding-top: 1rem;
+    padding: 0;
+    border-radius: 6px;
+    text-decoration: none;
+
+    color: rgba(0, 0, 0, 0.78);
+    transition: background-color 0.15s ease, color 0.15s ease,
+      transform 0.06s ease;
+
+    // never show labels in icon bar mode
+    .nav-label {
+      display: none;
+    }
+
+    // icon styling (large)
+    .nav-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      opacity: 0.85;
+      transition: opacity 0.15s ease, color 0.15s ease;
+
+      i {
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      svg {
+        width: 4rem;
+        height: 4rem;
+        display: block;
+
+        path,
+        circle,
+        rect {
+          fill: currentColor;
+        }
+      }
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+      color: rgba(0, 0, 0, 0.92);
+
+      .nav-icon {
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+
+    &.active {
+      background-color: rgba(var(--cui-primary-rgb), 0.18);
+      color: var(--cui-primary);
+
+      .nav-icon {
+        opacity: 1;
+        color: var(--cui-primary);
+      }
+    }
+  }
+}
+
+// Content surface
+.admin-surface {
+  background-color: var(--cui-body-bg);
+  border-radius: var(--cui-border-radius);
+  box-shadow: var(--cui-box-shadow-sm);
+  padding: 2rem;
+}
+
+// Dark mode
+@include color-mode(dark) {
+  body {
+    background-color: var(--cui-dark-bg-subtle);
+  }
+
+  .admin-surface {
+    background-color: var(--cui-body-bg);
+  }
+
+  .admin-sidebar {
+    .nav-link {
+      color: rgba(255, 255, 255, 0.82);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.92);
+      }
+    }
+  }
+}
+
+// Dashboard cards (kept from your original)
+.admin-dashboard {
+  .stat-card {
+    .stat-title {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 0.25rem;
+    }
+  }
+}

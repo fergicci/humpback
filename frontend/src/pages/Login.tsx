@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link} from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 
 const Login: React.FC = () => {
   const { signin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation() as any;
-  const from = location.state?.from?.pathname || "/admin/contacts";
+  const from = location.state?.from?.pathname || "/admin";
 
   const remembered = localStorage.getItem("hb_remember") === "1";
 
@@ -158,15 +158,11 @@ const Login: React.FC = () => {
                   )}
                 </Button>
 
-                <div className="text-center mt-3">
+                <div className="text-center mt-3 small">
                   Don’t have an account?
-                  <a
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
-                    className="small"
-                  >
-                    Contact the admin
-                  </a>
+                  <Link to="/register" className="ms-1">
+                    Register
+                  </Link>
                 </div>
               </Form>
             </div>
