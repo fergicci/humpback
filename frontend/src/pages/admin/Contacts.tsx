@@ -1,6 +1,6 @@
 // src/pages/ContactsPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { Container } from "react-bootstrap";
+import { Alert, Button, Container, Modal } from "react-bootstrap";
 
 import {
   getContacts,
@@ -10,8 +10,18 @@ import {
   deleteContact,
 } from "@/services/contactService";
 import type { ApiError } from "@/services/api";
+import { useAutoRefresh } from "@/utils/useAutoRefresh";
+
+type ConfirmDialogState = {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  confirmVariant: "danger" | "warning" | "primary";
+  onConfirm: () => Promise<void>;
+};
 
 export default function ContactsPage() {
+  const refreshTick = useAutoRefresh(60_000);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [rows, setRows] = useState<ContactItem[]>([]);
@@ -22,6 +32,10 @@ export default function ContactsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [selected, setSelected] = useState<ContactItem | null>(null);
+  const [actionBusy, setActionBusy] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] =
+    useState<ConfirmDialogState | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   const lang = useMemo(() => navigator.language || "en", []);
 
@@ -51,7 +65,28 @@ export default function ContactsPage() {
     return () => {
       cancelled = true;
     };
-  }, [lang, page, size]);
+  }, [lang, page, size, refreshTick]);
+
+  function showActionError(e: unknown) {
+    const err = e as ApiError;
+    setError(err);
+  }
+
+  function openConfirmDialog(config: ConfirmDialogState) {
+    setConfirmDialog(config);
+  }
+
+  async function runConfirmDialog() {
+    if (!confirmDialog) return;
+
+    try {
+      setConfirmBusy(true);
+      await confirmDialog.onConfirm();
+      setConfirmDialog(null);
+    } finally {
+      setConfirmBusy(false);
+    }
+  }
 
   async function handleMarkRead(id: string) {
     try {
@@ -63,7 +98,7 @@ export default function ContactsPage() {
         prev && prev.id === id ? { ...prev, read: true } : prev
       );
     } catch (e) {
-      console.error("Failed to mark as read:", e);
+      showActionError(e);
     }
   }
 
@@ -77,27 +112,36 @@ export default function ContactsPage() {
         prev && prev.id === id ? { ...prev, read: false } : prev
       );
     } catch (e) {
-      console.error("Failed to mark as read:", e);
+      showActionError(e);
     }
   }
 
-  async function handleDelete(id: string) {
-    const ok = window.confirm("Are you sure you want to delete this contact?");
-    if (!ok) return;
+  function handleDelete(contact: ContactItem) {
+    openConfirmDialog({
+      title: "Delete contact",
+      message: `Are you sure you want to delete contact from "${contact.name}"?`,
+      confirmLabel: "Delete",
+      confirmVariant: "danger",
+      onConfirm: async () => {
+        try {
+          setActionBusy(`${contact.id}:delete`);
+          await deleteContact(contact.id);
 
-    try {
-      await deleteContact(id);
-
-      setRows((prev) => prev.filter((r) => r.id !== id));
-      setSelected((prev) => (prev && prev.id === id ? null : prev));
-      setTotalElements((prev) => (prev > 0 ? prev - 1 : 0));
-    } catch (e) {
-      console.error("Failed to delete contact:", e);
-    }
+          setRows((prev) => prev.filter((r) => r.id !== contact.id));
+          setSelected((prev) => (prev && prev.id === contact.id ? null : prev));
+          setTotalElements((prev) => (prev > 0 ? prev - 1 : 0));
+        } catch (e) {
+          showActionError(e);
+        } finally {
+          setActionBusy(null);
+        }
+      },
+    });
   }
+
   return (
-    <Container className="my-5 contacts-admin">
-      <h2 className="mb-4">Contacts</h2>
+    <Container className="contacts-admin">
+      <h1 className="mb-4">Contacts</h1>
 
       <div className="d-flex mb-3">
         <div className="ms-auto">
@@ -123,7 +167,7 @@ export default function ContactsPage() {
       </div>
 
       {error && (
-        <div className="alert alert-danger" role="alert">
+        <Alert variant="danger" dismissible onClose={() => setError(null)}>
           <div className="fw-semibold">
             Error {error.code}: {error.message}
           </div>
@@ -134,7 +178,7 @@ export default function ContactsPage() {
               ))}
             </ul>
           )}
-        </div>
+        </Alert>
       )}
 
       <div className="table-responsive">
@@ -256,7 +300,8 @@ export default function ContactsPage() {
                         className="btn btn-outline-danger btn-icon"
                         title="Delete"
                         aria-label="Delete"
-                        onClick={() => handleDelete(c.id)}
+                        onClick={() => handleDelete(c)}
+                        disabled={actionBusy === `${c.id}:delete`}
                       >
                         <i className="bi bi-trash" aria-hidden="true" />
                         <span className="visually-hidden">Delete</span>
@@ -357,7 +402,8 @@ export default function ContactsPage() {
 
               <button
                 className="btn btn-danger"
-                onClick={() => handleDelete(selected.id)}
+                onClick={() => handleDelete(selected)}
+                disabled={actionBusy === `${selected.id}:delete`}
               >
                 Delete
               </button>
@@ -365,6 +411,33 @@ export default function ContactsPage() {
           </div>
         </div>
       )}
+
+      <Modal
+        show={!!confirmDialog}
+        onHide={() => !confirmBusy && setConfirmDialog(null)}
+        centered
+      >
+        <Modal.Header closeButton={!confirmBusy}>
+          <Modal.Title>{confirmDialog?.title}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{confirmDialog?.message}</Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setConfirmDialog(null)}
+            disabled={confirmBusy}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant={confirmDialog?.confirmVariant ?? "primary"}
+            onClick={runConfirmDialog}
+            disabled={confirmBusy}
+          >
+            {confirmBusy ? "Please wait..." : confirmDialog?.confirmLabel}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }

@@ -6,6 +6,7 @@
     "selected_date": "Selected Date",
     "selected_time": "Selected Time",
     "duration": "Duration",
+    "type": "Booking Type",
     "submit": "Book Now"
   },
   "labels": {

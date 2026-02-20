@@ -1,0 +1,51 @@
+.bookings-calendar {
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+  }
+
+  .calendar-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.5);
+    padding-bottom: 0.25rem;
+  }
+
+  .calendar-cell {
+    position: relative;
+    height: 88px;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: var(--cui-body-bg);
+    box-shadow: var(--cui-box-shadow-sm);
+
+    &.empty {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    &.has-bookings {
+      background: rgba(var(--cui-primary-rgb), 0.08);
+    }
+  }
+
+  .day-number {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .booking-count {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+
+    background: var(--cui-primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+  }
+}

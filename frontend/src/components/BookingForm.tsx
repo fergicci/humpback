@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { I18N_NAMESPACES, TRANSLATION_KEYS } from "@/i18n/keys";
+import {
+  getBookingTypes,
+  type BookingTypeOption,
+} from "@/services/bookingService";
 
 interface BookingFormProps {
   selectedDate: Date | null;
@@ -12,8 +16,41 @@ const BookingForm: React.FC<BookingFormProps> = ({
   selectedDate,
   selectedTime,
 }) => {
-  const { t } = useTranslation(I18N_NAMESPACES.BOOKING);
+  const { t, i18n } = useTranslation(I18N_NAMESPACES.BOOKING);
   const [selectedDuration, setSelectedDuration] = useState<number>(2);
+  const [bookingTypes, setBookingTypes] = useState<BookingTypeOption[]>([]);
+  const [selectedType, setSelectedType] = useState<string>("REHARSAL");
+
+  const bookingTypeOptions = useMemo(() => {
+    if (bookingTypes.length > 0) return bookingTypes;
+    return [{ value: "REHARSAL", label: "Rehearsal" }];
+  }, [bookingTypes]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const options = await getBookingTypes(i18n.language);
+        if (!cancelled && options.length > 0) {
+          setBookingTypes(options);
+          setSelectedType((current) =>
+            options.some((option) => option.value === current)
+              ? current
+              : options[0].value
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setBookingTypes([]);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [i18n.language]);
 
   return (
     <>
@@ -62,6 +99,20 @@ const BookingForm: React.FC<BookingFormProps> = ({
             {[2, 3, 4, 5, 6, 7, 8].map((h) => (
               <option key={h} value={h}>
                 {h} hour{h > 1 ? "s" : ""}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>{t(TRANSLATION_KEYS.BOOKING.FORM.TYPE)}</Form.Label>
+          <Form.Select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            {bookingTypeOptions.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
               </option>
             ))}
           </Form.Select>

@@ -11,6 +11,8 @@
     "obfuscate": "javascript-obfuscator dist/assets --output dist/assets"
   },
   "dependencies": {
+    "@coreui/chartjs": "^4.0.0",
+    "@coreui/coreui": "^5.4.3",
     "@popperjs/core": "^2.11.8",
     "@reduxjs/toolkit": "^2.7.0",
     "axios": "^1.9.0",
@@ -27,22 +29,23 @@
     "react-i18next": "^15.4.1",
     "react-loading-skeleton": "^3.5.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.5.1"
+    "react-router-dom": "^7.5.1",
+    "simplebar": "^6.3.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
+    "@eslint/js": "^9.39.3",
     "@types/node": "^22.14.1",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.25.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
+    "eslint": "^9.39.3",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.0",
     "globals": "^16.0.0",
-    "javascript-obfuscator": "^4.1.1",
+    "javascript-obfuscator": "^5.3.0",
     "sass": "^1.86.3",
     "typescript": "~5.7.2",
-    "typescript-eslint": "^8.26.1",
+    "typescript-eslint": "^8.56.0",
     "vite": "^6.3.1"
   },
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",

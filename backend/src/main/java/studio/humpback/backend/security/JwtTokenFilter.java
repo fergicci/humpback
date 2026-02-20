@@ -12,12 +12,16 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
+
+    private static final String ROLE_PREFIX = "ROLE_";
 
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -36,7 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     username,
                     null,
-                    roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
+                    mapAuthorities(roles)
             );
 
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -55,5 +59,36 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
 
         return null;
+    }
+
+    private List<SimpleGrantedAuthority> mapAuthorities(List<String> roles) {
+        Set<String> normalizedAuthorities = new LinkedHashSet<>();
+
+        for (String role : roles) {
+            if (role == null) {
+                continue;
+            }
+
+            String trimmed = role.trim();
+            if (trimmed.isBlank()) {
+                continue;
+            }
+
+            String upper = trimmed.toUpperCase(Locale.ROOT);
+            String rawRole = upper.startsWith(ROLE_PREFIX)
+                    ? upper.substring(ROLE_PREFIX.length())
+                    : upper;
+
+            if (rawRole.isBlank()) {
+                continue;
+            }
+
+            normalizedAuthorities.add(rawRole);
+            normalizedAuthorities.add(ROLE_PREFIX + rawRole);
+        }
+
+        return normalizedAuthorities.stream()
+                .map(SimpleGrantedAuthority::new)
+                .toList();
     }
 }

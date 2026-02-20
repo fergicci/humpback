@@ -3,17 +3,28 @@ import { api, ApiError, ApiResponse, handleError } from "./api";
 
 const AUTH_STORAGE_KEY = "hb_auth";
 const USER_STORAGE_KEY = "hb_user";
-const AUTH_EVENT_KEY = "hb_auth_event"; // new
+const AUTH_EVENT_KEY = "hb_auth_event";
 
 export interface User {
   id: string;
   username: string;
-  fullName: string;
+  fullname: string;
   roles: string[];
   email: string;
   createdAt: string;
   lastLogin?: string;
 }
+
+export interface RegisterRequest {
+  username: string;
+  fullname: string;
+  email: string;
+  password: string;
+}
+
+export type RegisterFormState = RegisterRequest & {
+  confirmPassword: string;
+};
 
 export type LoginData = User & { token?: string };
 
@@ -189,10 +200,27 @@ function toUser(d: Partial<LoginData> | null | undefined): User {
   return {
     id: d?.id ?? "",
     username: d?.username ?? "",
-    fullName: d?.fullName ?? "",
+    fullname: d?.fullname ?? "",
     roles: (d?.roles as string[]) ?? [],
     email: d?.email ?? "",
     createdAt: d?.createdAt ?? "",
     lastLogin: d?.lastLogin,
   };
+}
+
+
+export async function registerUser(payload: RegisterRequest, lang: string): Promise<void> {
+  try {
+    const { data: resp } = await api.post<ApiResponse<void>>("/auth/register", payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Language": lang,
+      },
+    });
+
+    if (resp.success) return;
+    throw resp.error;
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
 }

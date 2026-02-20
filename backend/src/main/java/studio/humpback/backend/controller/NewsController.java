@@ -1,27 +1,35 @@
 package studio.humpback.backend.controller;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-
-import studio.humpback.backend.dto.ApiResponse;
-import studio.humpback.backend.dto.PagedResponse;
-import studio.humpback.backend.dto.NewsRequest;
-import studio.humpback.backend.dto.NewsResponse;
-import studio.humpback.backend.model.News;
-import studio.humpback.backend.model.NewsTranslation;
-import studio.humpback.backend.service.NewsService;
-import studio.humpback.backend.exception.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.Locale;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import studio.humpback.backend.dto.ApiResponse;
+import studio.humpback.backend.dto.NewsRequest;
+import studio.humpback.backend.dto.NewsResponse;
+import studio.humpback.backend.dto.PagedResponse;
+import studio.humpback.backend.exception.ResourceNotFoundException;
+import studio.humpback.backend.model.News;
+import studio.humpback.backend.model.NewsTranslation;
+import studio.humpback.backend.service.NewsService;
 
 @RestController
 @RequestMapping("/api/v1/news")
@@ -73,6 +81,7 @@ public class NewsController {
         }
 
         @PostMapping
+        @ResponseStatus(code = HttpStatus.CREATED)
         @PreAuthorize("hasAuthority('ADMIN')")
         public ApiResponse<NewsResponse> createNews(
                         @RequestBody @Valid NewsRequest newsRequest,
@@ -94,9 +103,9 @@ public class NewsController {
         }
 
         @DeleteMapping("/{id}")
+        @ResponseStatus(code = HttpStatus.NO_CONTENT)
         @PreAuthorize("hasAuthority('ADMIN')")
-        public ApiResponse<Void> deleteNews(@PathVariable String id) {
+        public void deleteNews(@PathVariable String id) {
                 newsService.delete(id);
-                return ApiResponse.success();
         }
 }
