@@ -1,5 +1,11 @@
 package studio.humpback.backend.controller;
 
+import static studio.humpback.backend.service.UserService.AUTHORITY_ADMIN;
+import static studio.humpback.backend.service.UserService.AUTHORITY_READER;
+import static studio.humpback.backend.service.UserService.AUTHORITY_ROLE_ADMIN;
+import static studio.humpback.backend.service.UserService.AUTHORITY_ROLE_READER;
+
+import java.util.Arrays;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -7,9 +13,11 @@ import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 import studio.humpback.backend.dto.ApiResponse;
 import studio.humpback.backend.dto.BookingRequest;
 import studio.humpback.backend.dto.BookingResponse;
+import studio.humpback.backend.dto.BookingTypeOptionResponse;
 import studio.humpback.backend.dto.PagedResponse;
 import studio.humpback.backend.model.Booking;
 import studio.humpback.backend.model.BookingType;
@@ -46,6 +55,7 @@ import studio.humpback.backend.service.BookingService;
 public class BookingController {
 
         private final BookingService bookingService;
+        private final MessageSource messageSource;
 
         @GetMapping
         @PreAuthorize("hasAnyAuthority('ADMIN', 'READER')")
@@ -75,6 +85,21 @@ public class BookingController {
                                 .build();
 
                 return ApiResponse.success(responses);
+        }
+
+        @GetMapping("/types")
+        public ApiResponse<List<BookingTypeOptionResponse>> getBookingTypes(Locale locale) {
+                List<BookingTypeOptionResponse> bookingTypes = Arrays.stream(BookingType.values())
+                                .map(type -> new BookingTypeOptionResponse(
+                                                type.name(),
+                                                messageSource.getMessage(
+                                                                type.getLabel(),
+                                                                null,
+                                                                type.toDisplayLabel(),
+                                                                locale)))
+                                .toList();
+
+                return ApiResponse.success(bookingTypes);
         }
 
         @GetMapping("/today")
@@ -112,6 +137,7 @@ public class BookingController {
         }
 
         @PostMapping
+        @ResponseStatus(code = HttpStatus.CREATED)
         public ApiResponse<BookingResponse> createBooking(@RequestBody @Valid BookingRequest bookingRequest) {
                 Booking booking = bookingService.create(
                                 bookingRequest.getName(),
@@ -119,7 +145,7 @@ public class BookingController {
                                 bookingRequest.getPhone(),
                                 bookingRequest.getBookingAt().toInstant(),
                                 bookingRequest.getNumberOfHours(),
-                                BookingType.valueOf(bookingRequest.getType()));
+                                BookingType.fromApiValue(bookingRequest.getType()));
                 return ApiResponse.success(toResponse(booking));
         }
 
@@ -135,7 +161,7 @@ public class BookingController {
                                 bookingRequest.getPhone(),
                                 bookingRequest.getBookingAt().toInstant(),
                                 bookingRequest.getNumberOfHours(),
-                                BookingType.valueOf(bookingRequest.getType()));
+                                BookingType.fromApiValue(bookingRequest.getType()));
                 return ApiResponse.success(toResponse(booking));
         }
 
@@ -148,22 +174,25 @@ public class BookingController {
         }
 
         @DeleteMapping("/{id}")
+        @ResponseStatus(code = HttpStatus.NO_CONTENT)
         @PreAuthorize("hasAuthority('ADMIN')")
-        public ApiResponse<Void> deleteBooking(@PathVariable String id) {
+        public void deleteBooking(@PathVariable String id) {
                 bookingService.delete(id);
-                return ApiResponse.success();
         }
 
         private BookingResponse toResponse(Booking booking) {
-                boolean isAdmin = Optional
+                boolean canSeeFullResponse = Optional
                                 .ofNullable(SecurityContextHolder.getContext().getAuthentication())
                                 .filter(Authentication::isAuthenticated)
                                 .map(Authentication::getAuthorities)
                                 .stream()
                                 .flatMap(Collection::stream)
-                                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+                                .anyMatch(a -> a.getAuthority().equals(AUTHORITY_ADMIN)
+                                                || a.getAuthority().equals(AUTHORITY_READER)
+                                                || a.getAuthority().equals(AUTHORITY_ROLE_ADMIN)
+                                                || a.getAuthority().equals(AUTHORITY_ROLE_READER));
 
-                return isAdmin
+                return canSeeFullResponse
                                 ? toFullResponse(booking)
                                 : toRestrictResponse(booking);
         }

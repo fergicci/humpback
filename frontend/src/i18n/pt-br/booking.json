@@ -6,6 +6,7 @@
     "selected_date": "Dia escolhido",
     "selected_time": "Hora escolhida",
     "duration": "Duração",
+    "type": "Tipo de reserva",
     "submit": "Reservar"
   },
   "labels": {

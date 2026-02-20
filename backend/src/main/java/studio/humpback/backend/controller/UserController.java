@@ -81,9 +81,8 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ApiResponse<Void> deleteContact(@PathVariable String id) {
+    public void deleteContact(@PathVariable String id) {
         userService.delete(id);
-        return ApiResponse.success();
     }
 
     @PatchMapping("/{id}/disable/{desiredDisable}")

@@ -2,8 +2,6 @@ package studio.humpback.backend.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +20,11 @@ import studio.humpback.backend.repository.UserRepository;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    public static final String AUTHORITY_ADMIN = "ADMIN";
+    public static final String AUTHORITY_READER = "READER";
+    public static final String AUTHORITY_ROLE_ADMIN = "ROLE_ADMIN";
+    public static final String AUTHORITY_ROLE_READER = "ROLE_READER";
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private static final String USER_NOT_FOUND = "User with id %s not found";

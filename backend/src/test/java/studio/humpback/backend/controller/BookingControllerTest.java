@@ -46,6 +46,15 @@ class BookingControllerTest {
     private JwtTokenProvider jwtTokenProvider;
 
     @Test
+    void getBookingTypesReturnsFriendlyLabels() throws Exception {
+        mockMvc.perform(get("/api/v1/bookings/types"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[0].value").value("REHARSAL"))
+                .andExpect(jsonPath("$.data[0].label").value("Rehearsal"));
+    }
+
+    @Test
     void getBookingsWithDslFiltersCallsServiceWithDslList() throws Exception {
         Booking booking = Booking.builder()
                 .id("b1")
@@ -71,6 +80,53 @@ class BookingControllerTest {
         verify(bookingService).getPage(
                 any(),
                 eq(List.of("hasBeenPayed:eq:false", "bookingType:eq:REHARSAL")));
+    }
+
+    @Test
+    void createBookingAcceptsTypeWithSpacesAndCallsService() throws Exception {
+        Booking booking = Booking.builder()
+                .id("b2")
+                .name("Alice")
+                .email("alice@example.com")
+                .phone("+5511999999999")
+                .bookingAt(Instant.parse("2026-12-31T23:59:00Z"))
+                .endAt(Instant.parse("2027-01-01T01:59:00Z"))
+                .bookingType(BookingType.REHARSAL_RECORDING)
+                .build();
+
+        when(bookingService.create(
+                "Alice",
+                "alice@example.com",
+                "+5511999999999",
+                Instant.parse("2026-12-31T23:59:00Z"),
+                2,
+                BookingType.REHARSAL_RECORDING)).thenReturn(booking);
+
+        String payload = """
+                {
+                  "name": "Alice",
+                  "email": "alice@example.com",
+                  "phone": "+5511999999999",
+                  "bookingAt": "2026-12-31T23:59:00.000Z",
+                  "numberOfHours": 2,
+                  "type": "Rehearsal Recording"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.bookingAt").exists());
+
+        verify(bookingService).create(
+                "Alice",
+                "alice@example.com",
+                "+5511999999999",
+                Instant.parse("2026-12-31T23:59:00Z"),
+                2,
+                BookingType.REHARSAL_RECORDING);
     }
 
     @Test
@@ -107,7 +163,7 @@ class BookingControllerTest {
         mockMvc.perform(post("/api/v1/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.bookingAt").exists())
                 .andExpect(jsonPath("$.data.endAt").exists());

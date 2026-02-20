@@ -30,11 +30,12 @@ class BookingDslQuerySpecificationTest {
     void toPredicateAcceptsAliasFieldsAndOperationCase() {
         Predicate predicate = specification.toPredicate(List.of(
                 "payment:EQ:true",
-                "type:eq:RECORDING"));
+                "type:eq:Rehearsal Recording"));
 
         String expression = predicate.toString();
         assertThat(expression).contains("hasBeenPayed");
         assertThat(expression).contains("bookingType");
+        assertThat(expression).contains("REHARSAL_RECORDING");
     }
 
     @Test

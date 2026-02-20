@@ -10,6 +10,7 @@ import {
   updateUser,
 } from "@/services/userService";
 import type { ApiError } from "@/services/api";
+import { useAutoRefresh } from "@/utils/useAutoRefresh";
 
 type EditRoles = {
   ADMIN: boolean;
@@ -52,6 +53,7 @@ function fromLocalDateTimeInput(value: string): string | null {
 }
 
 export default function UsersPage() {
+  const refreshTick = useAutoRefresh(60_000);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [rows, setRows] = useState<UserItem[]>([]);
@@ -105,7 +107,7 @@ export default function UsersPage() {
     return () => {
       cancelled = true;
     };
-  }, [lang, page, size]);
+  }, [lang, page, size, refreshTick]);
 
   function patchUserInState(id: string, patch: Partial<UserItem>) {
     setRows((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));

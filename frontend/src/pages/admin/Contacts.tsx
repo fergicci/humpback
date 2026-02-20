@@ -10,6 +10,7 @@ import {
   deleteContact,
 } from "@/services/contactService";
 import type { ApiError } from "@/services/api";
+import { useAutoRefresh } from "@/utils/useAutoRefresh";
 
 type ConfirmDialogState = {
   title: string;
@@ -20,6 +21,7 @@ type ConfirmDialogState = {
 };
 
 export default function ContactsPage() {
+  const refreshTick = useAutoRefresh(60_000);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [rows, setRows] = useState<ContactItem[]>([]);
@@ -63,7 +65,7 @@ export default function ContactsPage() {
     return () => {
       cancelled = true;
     };
-  }, [lang, page, size]);
+  }, [lang, page, size, refreshTick]);
 
   function showActionError(e: unknown) {
     const err = e as ApiError;

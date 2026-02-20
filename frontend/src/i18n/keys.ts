@@ -84,6 +84,7 @@ export const TRANSLATION_KEYS = {
       SELECTED_DATE: "form.selected_date",
       SELECTED_TIME: "form.selected_time",
       DURATION: "form.duration",
+      TYPE: "form.type",
       SUBMIT: "form.submit",
     },
     WARNING_MESSAGES: {

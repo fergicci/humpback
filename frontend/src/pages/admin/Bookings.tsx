@@ -3,14 +3,17 @@ import { Alert, Button, Container, Modal } from "react-bootstrap";
 
 import {
   getBookings,
+  getBookingTypes,
   deleteBooking,
   markBookingPayed,
   markBookingUnpayed,
   updateBooking,
   type BookingItem,
+  type BookingTypeOption,
 } from "@/services/bookingService";
 
 import type { ApiError } from "@/services/api";
+import { useAutoRefresh } from "@/utils/useAutoRefresh";
 
 type QuickRange = "ALL" | "TODAY" | "NEXT_2_DAYS" | "NEXT_10_DAYS";
 
@@ -30,15 +33,6 @@ type EditBookingState = {
   numberOfHours: number;
   type: string;
 };
-
-const BOOKING_TYPES = [
-  "REHARSAL",
-  "REHARSAL_RECORDING",
-  "RECORDING",
-  "MIXING",
-  "MASTERING",
-  "VIDEO_PRODUCTION",
-] as const;
 
 function toLocalDateTimeInput(value: string | null | undefined): string {
   if (!value) return "";
@@ -65,11 +59,24 @@ function deriveNumberOfHours(bookingAt: string, endAt: string): number {
   return Math.max(2, Math.min(8, Math.round((end - start) / (1000 * 60 * 60))));
 }
 
+function toBookingTypeLabel(value: string | null | undefined): string {
+  if (!value) return "";
+
+  return value
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function BookingsPage() {
+  const refreshTick = useAutoRefresh(60_000);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
 
   const [rows, setRows] = useState<BookingItem[]>([]);
+  const [bookingTypes, setBookingTypes] = useState<BookingTypeOption[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
@@ -149,6 +156,32 @@ export default function BookingsPage() {
 
   const hasActiveFilters = range !== "ALL" || unpaidOnly;
 
+  const bookingTypeLabelByValue = useMemo(
+    () => new Map(bookingTypes.map((type) => [type.value, type.label])),
+    [bookingTypes]
+  );
+
+  const bookingTypeOptions = useMemo(() => {
+    if (bookingTypes.length > 0) return bookingTypes;
+
+    const values = new Set<string>();
+    rows.forEach((row) => {
+      if (row.bookingType) values.add(row.bookingType);
+    });
+    if (selected?.bookingType) values.add(selected.bookingType);
+    if (values.size === 0) values.add("REHARSAL");
+
+    return Array.from(values).map((value) => ({
+      value,
+      label: toBookingTypeLabel(value),
+    }));
+  }, [bookingTypes, rows, selected]);
+
+  function bookingTypeLabel(value: string | null | undefined): string {
+    if (!value) return "";
+    return bookingTypeLabelByValue.get(value) ?? toBookingTypeLabel(value);
+  }
+
   function clearFilters() {
     setPage(1);
     setRange("ALL");
@@ -183,7 +216,28 @@ export default function BookingsPage() {
     return () => {
       cancelled = true;
     };
-  }, [lang, page, size, filters]);
+  }, [lang, page, size, filters, refreshTick]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const options = await getBookingTypes(lang);
+        if (!cancelled && options.length > 0) {
+          setBookingTypes(options);
+        }
+      } catch {
+        if (!cancelled) {
+          setBookingTypes([]);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
 
   function patchBookingInState(id: string, patch: Partial<BookingItem>) {
     setRows((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
@@ -237,7 +291,7 @@ export default function BookingsPage() {
       phone: b.phone ?? "",
       bookingAt: toLocalDateTimeInput(b.bookingAt),
       numberOfHours: deriveNumberOfHours(b.bookingAt, b.endAt),
-      type: b.bookingType ?? "REHARSAL",
+      type: b.bookingType ?? bookingTypeOptions[0]?.value ?? "REHARSAL",
     });
   }
 
@@ -317,7 +371,7 @@ export default function BookingsPage() {
     if (edit.numberOfHours < 2 || edit.numberOfHours > 8) {
       nextErrors.numberOfHours = "Duration must be between 2 and 8 hours.";
     }
-    if (!BOOKING_TYPES.includes(edit.type as (typeof BOOKING_TYPES)[number])) {
+    if (!bookingTypeOptions.some((type) => type.value === edit.type)) {
       nextErrors.type = "Booking type is invalid.";
     }
 
@@ -510,7 +564,7 @@ export default function BookingsPage() {
                 <tr key={b.id}>
                   <td>{new Date(b.bookingAt).toLocaleString()}</td>
                   <td>{deriveNumberOfHours(b.bookingAt, b.endAt)} h</td>
-                  <td>{b.bookingType}</td>
+                  <td>{bookingTypeLabel(b.bookingType)}</td>
                   <td className="text-truncate">{b.name}</td>
                   <td>
                     <a href={`mailto:${b.email}`}>{b.email}</a>
@@ -739,19 +793,19 @@ export default function BookingsPage() {
                 <>
                   <select
                     className={`form-select ${editErrors.type ? "is-invalid" : ""}`}
-                    value={edit?.type ?? "REHARSAL"}
+                    value={edit?.type ?? bookingTypeOptions[0]?.value ?? ""}
                     onChange={(e) => setEdit((s) => (s ? { ...s, type: e.target.value } : s))}
                   >
-                    {BOOKING_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
+                    {bookingTypeOptions.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
                       </option>
                     ))}
                   </select>
                   {editErrors.type && <div className="invalid-feedback d-block">{editErrors.type}</div>}
                 </>
               ) : (
-                <div>{selected.bookingType}</div>
+                <div>{bookingTypeLabel(selected.bookingType)}</div>
               )}
             </div>
 

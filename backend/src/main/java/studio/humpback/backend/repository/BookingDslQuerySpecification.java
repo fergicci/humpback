@@ -37,4 +37,12 @@ public class BookingDslQuerySpecification extends AbstractDslQuerySpecification<
             default -> rawField;
         };
     }
+
+    @Override
+    protected <E extends Enum<E>> E parseEnumValue(String field, String rawValue, Class<E> enumType) {
+        if ("bookingType".equals(field) && enumType.equals(BookingType.class)) {
+            return enumType.cast(BookingType.fromApiValue(rawValue));
+        }
+        return super.parseEnumValue(field, rawValue, enumType);
+    }
 }

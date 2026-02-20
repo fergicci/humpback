@@ -99,7 +99,7 @@ public abstract class AbstractDslQuerySpecification<T> implements DslQuerySpecif
         if (op.equals(OP_IN)) {
             return path.in(parseEnumList(field, rawValue, enumType));
         }
-        E value = parseEnum(field, rawValue, enumType);
+        E value = parseEnumValue(field, rawValue, enumType);
         return op.equals(OP_EQ) ? path.eq(value) : path.ne(value);
     }
 
@@ -158,7 +158,7 @@ public abstract class AbstractDslQuerySpecification<T> implements DslQuerySpecif
                 .toList();
     }
 
-    private <E extends Enum<E>> E parseEnum(String field, String rawValue, Class<E> enumType) {
+    protected <E extends Enum<E>> E parseEnumValue(String field, String rawValue, Class<E> enumType) {
         try {
             return Enum.valueOf(enumType, rawValue.toUpperCase(Locale.ROOT));
         } catch (Exception ex) {
@@ -168,7 +168,7 @@ public abstract class AbstractDslQuerySpecification<T> implements DslQuerySpecif
 
     private <E extends Enum<E>> List<E> parseEnumList(String field, String rawValue, Class<E> enumType) {
         return splitValues(rawValue).stream()
-                .map(value -> parseEnum(field, value, enumType))
+                .map(value -> parseEnumValue(field, value, enumType))
                 .toList();
     }
 

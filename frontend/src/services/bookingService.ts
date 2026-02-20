@@ -22,6 +22,11 @@ export interface BookingRequest {
   type: string;
 }
 
+export interface BookingTypeOption {
+  value: string;
+  label: string;
+}
+
 export interface PublicBookingItem {
   bookingAt: string;
   endAt: string;
@@ -53,6 +58,19 @@ export async function createBooking(payload: BookingRequest, lang: string): Prom
     await api.post("/bookings", payload, {
       headers: { "Content-Type": "application/json", "Accept-Language": lang },
     });
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
+
+export async function getBookingTypes(lang: string): Promise<BookingTypeOption[]> {
+  try {
+    const { data: resp } = await api.get<ApiResponse<BookingTypeOption[]>>("/bookings/types", {
+      headers: { "Accept-Language": lang },
+    });
+
+    if (resp.success) return resp.data ?? [];
+    throw resp.error;
   } catch (e) {
     throw handleError(e as AxiosError<ApiResponse<ApiError>>);
   }
