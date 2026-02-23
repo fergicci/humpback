@@ -17,8 +17,7 @@ export default function AdminLayout() {
         {/* Sidebar */}
         <Col className="admin-sidebar p-0" xs={12} md={3} lg={2}>
           <Nav className="flex-column admin-nav h-100">
-            {/* Top nav */}
-            <div className="d-flex flex-column gap-2">
+            <div className="admin-nav-list">
               <NavLink
                 to="/admin/dashboard"
                 className="nav-link"
@@ -74,7 +73,7 @@ export default function AdminLayout() {
         </Col>
 
         {/* Content */}
-        <Col className="p-4">
+        <Col className="admin-content">
           <div className="admin-surface">
             <Outlet />
           </div>

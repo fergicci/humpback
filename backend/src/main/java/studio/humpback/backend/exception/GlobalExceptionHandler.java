@@ -68,6 +68,7 @@ public class GlobalExceptionHandler {
             AuthorizationException.class,
             UserAccountLockedException.class,
             PasswordExpiredException.class,
+            PasswordChangeRequiredException.class,
             AccessDeniedException.class,
     })
     public ResponseEntity<ApiResponse<Void>> handleAuthorizationException(RuntimeException ex) {

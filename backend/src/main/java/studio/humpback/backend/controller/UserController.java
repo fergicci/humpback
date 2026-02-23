@@ -70,7 +70,6 @@ public class UserController {
                 id,
                 userRequest.getFullname(),
                 userRequest.getEmail(),
-                userRequest.getPasswordExpiredAt().toInstant(),
                 userRequest.isDisabled(),
                 userRequest.isAccountLocked(),
                 userRequest.getRoles());
@@ -113,6 +112,7 @@ public class UserController {
                 .roles(user.getRoles())
                 .accountLocked(user.isAccountLocked())
                 .disabled(user.getDisabled())
+                .twoFactorEnabled(Boolean.TRUE.equals(user.getTwoFactorEnabled()))
                 .build();
     }
 }
