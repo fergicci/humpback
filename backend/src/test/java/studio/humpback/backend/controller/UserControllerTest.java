@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -43,10 +43,10 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
 
     @Test
@@ -76,7 +76,7 @@ class UserControllerTest {
     }
 
     @Test
-    void updateUserAcceptsIsoDateAndCallsService() throws Exception {
+    void updateUserAcceptsPayloadAndCallsService() throws Exception {
         User updated = User.builder()
                 .id("u1")
                 .username("alice")
@@ -85,7 +85,7 @@ class UserControllerTest {
                 .createdAt(Instant.parse("2026-01-01T10:00:00Z"))
                 .lastLogin(Instant.parse("2026-01-02T10:00:00Z"))
                 .passwordExpiredAt(Instant.parse("2026-12-31T23:59:00Z"))
-                .roles(Set.of(UserRole.ADMIN, UserRole.READER))
+                .roles(Set.of(UserRole.ADMIN))
                 .accountLocked(false)
                 .disabled(false)
                 .build();
@@ -94,19 +94,17 @@ class UserControllerTest {
                 "u1",
                 "Alice Updated",
                 "alice.updated@example.com",
-                Instant.parse("2026-12-31T23:59:00Z"),
                 false,
                 false,
-                Set.of("ADMIN", "READER"))).thenReturn(updated);
+                Set.of("ADMIN"))).thenReturn(updated);
 
         String payload = """
                 {
                   "fullname": "Alice Updated",
                   "email": "alice.updated@example.com",
-                  "passwordExpiredAt": "2026-12-31T23:59:00.000Z",
                   "disabled": false,
                   "accountLocked": false,
-                  "roles": ["ADMIN", "READER"]
+                  "roles": ["ADMIN"]
                 }
                 """;
 
@@ -122,10 +120,9 @@ class UserControllerTest {
                 "u1",
                 "Alice Updated",
                 "alice.updated@example.com",
-                Instant.parse("2026-12-31T23:59:00Z"),
                 false,
                 false,
-                Set.of("ADMIN", "READER"));
+                Set.of("ADMIN"));
     }
 
     @Test
@@ -133,7 +130,6 @@ class UserControllerTest {
         String payload = objectMapper.writeValueAsString(java.util.Map.of(
                 "fullname", "",
                 "email", "invalid-email",
-                "passwordExpiredAt", "2020-01-01T00:00:00.000Z",
                 "disabled", false,
                 "accountLocked", false,
                 "roles", java.util.List.of()));
@@ -145,7 +141,6 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.message").value("Validation failed"))
                 .andExpect(jsonPath("$.error.details", hasItem(containsString("fullname"))))
-                .andExpect(jsonPath("$.error.details", hasItem(containsString("email"))))
-                .andExpect(jsonPath("$.error.details", hasItem(containsString("passwordExpiredAt"))));
+                .andExpect(jsonPath("$.error.details", hasItem(containsString("email"))));
     }
 }

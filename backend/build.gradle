@@ -6,7 +6,6 @@ plugins {
 
 group = 'studio.humpback'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '21'
 
 java {
 	toolchain {
