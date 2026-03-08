@@ -13,6 +13,7 @@ export interface User {
   email: string;
   createdAt: string;
   lastLogin?: string;
+  twoFactorEnabled?: boolean;
 }
 
 export interface RegisterRequest {
@@ -26,7 +27,38 @@ export type RegisterFormState = RegisterRequest & {
   confirmPassword: string;
 };
 
-export type LoginData = User & { token?: string };
+export type LoginData = User & {
+  token?: string;
+  requiresTwoFactor?: boolean;
+  twoFactorChallengeToken?: string;
+};
+
+export type LoginResult =
+  | {
+      status: "authenticated";
+      user: User;
+    }
+  | {
+      status: "two_factor_required";
+      challengeToken: string;
+      username: string;
+    };
+
+export type TwoFactorSetupResponse = {
+  manualEntryKey: string;
+  otpAuthUrl: string;
+  qrCodeDataUri: string;
+  twoFactorEnabled: boolean;
+};
+
+export type TwoFactorStatusResponse = {
+  twoFactorEnabled: boolean;
+};
+
+export type ForgotPasswordChallengeResponse = {
+  requiresTwoFactor: boolean;
+  challengeToken?: string;
+};
 
 function broadcastAuthChange(type: "logout" | "login") {
   try {
@@ -125,7 +157,7 @@ export async function login(
   username: string,
   password: string,
   remember = false
-): Promise<User> {
+): Promise<LoginResult> {
   try {
     const { data } = await api.post<ApiResponse<LoginData>>("/auth/login", {
       username,
@@ -134,30 +166,121 @@ export async function login(
 
     if (!data?.success) throw new Error("Login failed");
 
-    const maybeToken = data.data?.token;
-    const token =
-      typeof maybeToken === "string" && maybeToken.length > 0
-        ? maybeToken
-        : null;
-
-    inMemoryAccessToken = token;
-
-    if (remember && token) {
-      saveTokenToStorage(token);
-    } else {
-      saveTokenToStorage(null);
+    if (data.data?.requiresTwoFactor) {
+      const challengeToken = data.data?.twoFactorChallengeToken;
+      if (!challengeToken) throw new Error("Missing 2FA challenge token");
+      await doLocalLogout();
+      return {
+        status: "two_factor_required",
+        challengeToken,
+        username: data.data?.username ?? username,
+      };
     }
 
-    const me = (await fetchMe()) ?? toUser(data.data);
-    sessionUser = me;
+    const me = await completeAuthenticatedLogin(data.data, remember);
+    return { status: "authenticated", user: me };
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
 
-    if (remember) {
-      saveUserToStorage(me);
-    } else {
-      saveUserToStorage(null);
-    }
+export async function loginWithTwoFactor(
+  challengeToken: string,
+  code: string,
+  remember = false
+): Promise<User> {
+  try {
+    const { data } = await api.post<ApiResponse<LoginData>>("/auth/login/2fa", {
+      challengeToken,
+      code,
+    });
 
-    return me;
+    if (!data?.success) throw new Error("2FA login failed");
+
+    return completeAuthenticatedLogin(data.data, remember);
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
+
+export async function setupTwoFactor(): Promise<TwoFactorSetupResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<TwoFactorSetupResponse>>("/auth/2fa/setup");
+    if (!data?.success || !data.data) throw new Error("2FA setup failed");
+    return data.data;
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
+
+export async function enableTwoFactor(code: string): Promise<TwoFactorStatusResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<TwoFactorStatusResponse>>("/auth/2fa/enable", {
+      code,
+    });
+    if (!data?.success || !data.data) throw new Error("2FA enable failed");
+    return data.data;
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
+
+export async function disableTwoFactor(code: string): Promise<TwoFactorStatusResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<TwoFactorStatusResponse>>("/auth/2fa/disable", {
+      code,
+    });
+    if (!data?.success || !data.data) throw new Error("2FA disable failed");
+    return data.data;
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
+
+export async function requestForgotPassword(
+  username: string
+): Promise<ForgotPasswordChallengeResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<ForgotPasswordChallengeResponse>>(
+      "/auth/forgot-password/request",
+      { username }
+    );
+    if (!data?.success || !data.data) throw new Error("Forgot password request failed");
+    return data.data;
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
+
+export async function resetForgotPassword(
+  challengeToken: string,
+  code: string,
+  newPassword: string
+): Promise<void> {
+  try {
+    const { data } = await api.post<ApiResponse<void>>("/auth/forgot-password/reset", {
+      challengeToken,
+      code,
+      newPassword,
+    });
+    if (!data?.success) throw new Error("Forgot password reset failed");
+  } catch (e) {
+    throw handleError(e as AxiosError<ApiResponse<ApiError>>);
+  }
+}
+
+export async function changePasswordWithCurrent(
+  username: string,
+  oldPassword: string,
+  newPassword: string
+): Promise<void> {
+  try {
+    const { data } = await api.post<ApiResponse<void>>("/auth/change-password", {
+      username,
+      oldPassword,
+      newPassword,
+    });
+    if (!data?.success) throw new Error("Password update failed");
   } catch (e) {
     throw handleError(e as AxiosError<ApiResponse<ApiError>>);
   }
@@ -196,6 +319,38 @@ async function doLocalLogout(): Promise<void> {
   saveUserToStorage(null);
 }
 
+async function completeAuthenticatedLogin(
+  payload: LoginData | null | undefined,
+  remember: boolean
+): Promise<User> {
+  const maybeToken = payload?.token;
+  const token =
+    typeof maybeToken === "string" && maybeToken.length > 0
+      ? maybeToken
+      : null;
+
+  if (!token) throw new Error("Missing token");
+
+  inMemoryAccessToken = token;
+
+  if (remember && token) {
+    saveTokenToStorage(token);
+  } else {
+    saveTokenToStorage(null);
+  }
+
+  const me = (await fetchMe()) ?? toUser(payload);
+  sessionUser = me;
+
+  if (remember) {
+    saveUserToStorage(me);
+  } else {
+    saveUserToStorage(null);
+  }
+
+  return me;
+}
+
 function toUser(d: Partial<LoginData> | null | undefined): User {
   return {
     id: d?.id ?? "",
@@ -205,6 +360,7 @@ function toUser(d: Partial<LoginData> | null | undefined): User {
     email: d?.email ?? "",
     createdAt: d?.createdAt ?? "",
     lastLogin: d?.lastLogin,
+    twoFactorEnabled: !!d?.twoFactorEnabled,
   };
 }
 

@@ -28,6 +28,10 @@ public class JwtTokenProvider {
     private static final String CLAIM_ROLE = "role";
     private static final String CLAIM_AUTHORITIES = "authorities";
     private static final String CLAIM_AUTHORITY = "authority";
+    private static final String CLAIM_PURPOSE = "purpose";
+    private static final String PURPOSE_2FA_LOGIN = "2fa_login";
+    private static final String PURPOSE_2FA_FORGOT_PASSWORD = "2fa_forgot_password";
+    private static final String ERR_INVALID_CHALLENGE_TOKEN = "Invalid challenge token";
     private static final String AUTHORITY_KEY = "authority";
     private static final String AUTHORITY_EQUALS_PREFIX = AUTHORITY_KEY + "=";
     private static final String AUTHORITY_COLON_PREFIX = AUTHORITY_KEY + ":";
@@ -53,6 +57,12 @@ public class JwtTokenProvider {
     @Value("${jwt.clock-skew-seconds:30}")
     private long clockSkewSeconds;
 
+    @Value("${jwt.2fa-challenge-expiration-ms:300000}")
+    private Long twoFactorChallengeValidityInMilliseconds;
+
+    @Value("${jwt.forgot-password-challenge-expiration-ms:300000}")
+    private Long forgotPasswordChallengeValidityInMilliseconds;
+
     private Key secretKey;
 
     @PostConstruct
@@ -77,6 +87,56 @@ public class JwtTokenProvider {
                 .setExpiration(expiry)
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String createTwoFactorChallengeToken(String username) {
+        return createPurposeToken(username, PURPOSE_2FA_LOGIN, twoFactorChallengeValidityInMilliseconds);
+    }
+
+    public String createForgotPasswordChallengeToken(String username) {
+        return createPurposeToken(username, PURPOSE_2FA_FORGOT_PASSWORD, forgotPasswordChallengeValidityInMilliseconds);
+    }
+
+    private String createPurposeToken(String username, String purpose, Long validityMs) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + validityMs);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .claim(CLAIM_PURPOSE, purpose)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String getUsernameFromTwoFactorChallengeToken(String token) {
+        return getUsernameFromPurposeToken(token, PURPOSE_2FA_LOGIN);
+    }
+
+    public String getUsernameFromForgotPasswordChallengeToken(String token) {
+        return getUsernameFromPurposeToken(token, PURPOSE_2FA_FORGOT_PASSWORD);
+    }
+
+    private String getUsernameFromPurposeToken(String token, String expectedPurpose) {
+        try {
+            var claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .setAllowedClockSkewSeconds(clockSkewSeconds)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Object purpose = claims.get(CLAIM_PURPOSE);
+            if (!expectedPurpose.equals(purpose)) {
+                throw new IllegalArgumentException(ERR_INVALID_CHALLENGE_TOKEN);
+            }
+
+            return claims.getSubject();
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SecurityException
+                | IllegalArgumentException e) {
+            throw new IllegalArgumentException(ERR_INVALID_CHALLENGE_TOKEN);
+        }
     }
 
     public String getUsername(String token) {

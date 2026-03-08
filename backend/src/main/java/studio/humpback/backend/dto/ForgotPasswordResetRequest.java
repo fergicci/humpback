@@ -8,12 +8,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NewPasswordRequest {
-    @NotBlank(message = "{register.request.username.required}")
-    private String username;
+public class ForgotPasswordResetRequest {
+    @NotBlank
+    private String challengeToken;
 
-    @NotBlank(message = "{register.request.password.required}")
-    private String oldPassword;
+    @NotBlank
+    private String code;
 
     @NotBlank(message = "{register.request.password.required}")
     @Size(min = 12, max = 64, message = "{register.request.password.size}")

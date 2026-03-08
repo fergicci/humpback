@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Button, Container, Modal } from "react-bootstrap";
+import { useAuth } from "@/auth/AuthProvider";
+import {
+  disableTwoFactor,
+  enableTwoFactor,
+  setupTwoFactor,
+  type TwoFactorSetupResponse,
+} from "@/services/authService";
 
 import {
   getUsers,
@@ -12,18 +19,14 @@ import {
 import type { ApiError } from "@/services/api";
 import { useAutoRefresh } from "@/utils/useAutoRefresh";
 
-type EditRoles = {
-  ADMIN: boolean;
-  READER: boolean;
-};
+type EditRole = "ADMIN" | "READER";
 
 type EditUserState = {
   fullname: string;
   email: string;
-  passwordExpiredAt: string; // datetime-local string
   disabled: boolean;
   accountLocked: boolean;
-  roles: EditRoles;
+  role: EditRole | "";
 };
 
 type ConfirmDialogState = {
@@ -34,25 +37,8 @@ type ConfirmDialogState = {
   onConfirm: () => Promise<void>;
 };
 
-function toLocalDateTimeInput(value: string | null | undefined): string {
-  if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
-}
-
-function fromLocalDateTimeInput(value: string): string | null {
-  if (!value) return null;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
 export default function UsersPage() {
+  const { user, refreshUser } = useAuth();
   const refreshTick = useAutoRefresh(60_000);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
@@ -76,6 +62,8 @@ export default function UsersPage() {
     null
   );
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [twoFactorSetup, setTwoFactorSetup] = useState<TwoFactorSetupResponse | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
 
   const lang = useMemo(() => navigator.language || "en", []);
 
@@ -208,12 +196,86 @@ export default function UsersPage() {
     );
   }
 
+  function renderTwoFactor(twoFactorEnabled?: boolean) {
+    if (twoFactorEnabled) {
+      return (
+        <i
+          className="bi bi-shield-check text-success"
+          title="2FA enabled"
+          aria-label="2FA enabled"
+        />
+      );
+    }
+
+    return (
+      <i
+        className="bi bi-shield-x text-secondary"
+        title="2FA not enabled"
+        aria-label="2FA not enabled"
+      />
+    );
+  }
+
+  const isSelectedCurrentUser =
+    !!selected && !!user && selected.username === user.username;
+
+  async function handleStartTwoFactorSetup() {
+    if (!selected) return;
+    try {
+      setActionBusy(`${selected.id}:2fa-setup`);
+      setFormError(null);
+      const setup = await setupTwoFactor();
+      setTwoFactorSetup(setup);
+      setTwoFactorCode("");
+    } catch (e) {
+      setFormError(e as ApiError);
+    } finally {
+      setActionBusy(null);
+    }
+  }
+
+  async function handleEnableTwoFactor() {
+    if (!selected) return;
+    try {
+      setActionBusy(`${selected.id}:2fa-enable`);
+      setFormError(null);
+      await enableTwoFactor(twoFactorCode.trim());
+      patchUserInState(selected.id, { twoFactorEnabled: true });
+      await refreshUser();
+      setTwoFactorSetup(null);
+      setTwoFactorCode("");
+    } catch (e) {
+      setFormError(e as ApiError);
+    } finally {
+      setActionBusy(null);
+    }
+  }
+
+  async function handleDisableTwoFactor() {
+    if (!selected) return;
+    try {
+      setActionBusy(`${selected.id}:2fa-disable`);
+      setFormError(null);
+      await disableTwoFactor(twoFactorCode.trim());
+      patchUserInState(selected.id, { twoFactorEnabled: false });
+      await refreshUser();
+      setTwoFactorSetup(null);
+      setTwoFactorCode("");
+    } catch (e) {
+      setFormError(e as ApiError);
+    } finally {
+      setActionBusy(null);
+    }
+  }
+
   function openDrawer(u: UserItem) {
     setSelected(u);
     setIsEditing(false);
     setEdit(null);
     setEditErrors({});
     setFormError(null);
+    setTwoFactorSetup(null);
+    setTwoFactorCode("");
   }
 
   function startEdit(u: UserItem) {
@@ -225,13 +287,9 @@ export default function UsersPage() {
     setEdit({
       fullname: u.fullname ?? "",
       email: u.email ?? "",
-      passwordExpiredAt: toLocalDateTimeInput(u.passwordExpiredAt),
       disabled: !!u.disabled,
       accountLocked: !!u.accountLocked,
-      roles: {
-        ADMIN: u.roles?.includes("ADMIN") ?? false,
-        READER: u.roles?.includes("READER") ?? false,
-      },
+      role: u.roles?.includes("ADMIN") ? "ADMIN" : "READER",
     });
   }
 
@@ -305,30 +363,24 @@ export default function UsersPage() {
     ) {
       nextErrors.email = "Email is invalid.";
     }
-    if (!edit.passwordExpiredAt) {
-      nextErrors.passwordExpiredAt = "Password expiration date is required.";
-    }
 
     if (Object.keys(nextErrors).length > 0) {
       setEditErrors(nextErrors);
       return;
     }
 
-    const roles: string[] = [];
-    if (edit.roles.ADMIN) roles.push("ADMIN");
-    if (edit.roles.READER) roles.push("READER");
-    if (roles.length === 0) {
-      setEditErrors({ roles: "Select at least one role." });
+    const role = edit.role;
+    if (!role) {
+      setEditErrors({ role: "Select one role." });
       return;
     }
 
     const payload = {
       fullname: edit.fullname.trim(),
       email: edit.email.trim(),
-      passwordExpiredAt: fromLocalDateTimeInput(edit.passwordExpiredAt),
       disabled: edit.disabled,
       accountLocked: edit.accountLocked,
-      roles,
+      roles: [role],
     };
 
     try {
@@ -340,8 +392,6 @@ export default function UsersPage() {
       patchUserInState(selected.id, {
         fullname: payload.fullname,
         email: payload.email,
-        passwordExpiredAt:
-          payload.passwordExpiredAt ?? selected.passwordExpiredAt,
         disabled: payload.disabled,
         accountLocked: payload.accountLocked,
         roles: payload.roles,
@@ -414,6 +464,7 @@ export default function UsersPage() {
               <th style={{ width: "20rem" }}>Email</th>
               <th style={{ width: "14rem" }}>Created</th>
               <th style={{ width: "6rem" }}>Roles</th>
+              <th style={{ width: "6rem" }}>2FA</th>
               <th style={{ width: "6rem" }}>Status</th>
               <th style={{ width: "12rem" }} className="text-end">
                 Actions
@@ -424,7 +475,7 @@ export default function UsersPage() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={7} className="text-center py-4">
+                <td colSpan={8} className="text-center py-4">
                   <div
                     className="spinner-border"
                     role="status"
@@ -436,7 +487,7 @@ export default function UsersPage() {
 
             {!loading && rows.length === 0 && !error && (
               <tr>
-                <td colSpan={7} className="text-center text-muted py-4">
+                <td colSpan={8} className="text-center text-muted py-4">
                   No users found.
                 </td>
               </tr>
@@ -458,6 +509,7 @@ export default function UsersPage() {
                     {new Date(u.createdAt).toLocaleString()}
                   </td>
                   <td className="text-start">{renderRoles(u.roles)}</td>
+                  <td className="text-start">{renderTwoFactor(u.twoFactorEnabled)}</td>
                   <td className="text-start">{renderStatus(u)}</td>
 
                   <td className="text-end">
@@ -642,36 +694,6 @@ export default function UsersPage() {
               )}
             </div>
 
-            {/* Password expires */}
-            <div className="mb-3">
-              <div className="text-muted small">Password expires</div>
-              {isEditing ? (
-                <>
-                  <input
-                    type="datetime-local"
-                    className={`form-control ${
-                      editErrors.passwordExpiredAt ? "is-invalid" : ""
-                    }`}
-                    value={edit?.passwordExpiredAt ?? ""}
-                    onChange={(e) =>
-                      setEdit((s) =>
-                        s ? { ...s, passwordExpiredAt: e.target.value } : s
-                      )
-                    }
-                  />
-                  {editErrors.passwordExpiredAt && (
-                    <div className="invalid-feedback d-block">
-                      {editErrors.passwordExpiredAt}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div>
-                  {new Date(selected.passwordExpiredAt).toLocaleString()}
-                </div>
-              )}
-            </div>
-
             {/* Roles */}
             <div className="mb-3">
               <div className="text-muted small">Roles</div>
@@ -680,45 +702,47 @@ export default function UsersPage() {
                   <div className="d-flex flex-column gap-2 mt-1">
                     <label className="form-check">
                       <input
-                        type="checkbox"
+                        type="radio"
                         className="form-check-input"
-                        checked={!!edit?.roles.ADMIN}
-                        onChange={(e) =>
+                        checked={edit?.role === "ADMIN"}
+                        onChange={() =>
                           setEdit((s) =>
                             s
                               ? {
                                   ...s,
-                                  roles: { ...s.roles, ADMIN: e.target.checked },
+                                  role: "ADMIN",
                                 }
                               : s
                           )
                         }
+                        name="edit-role"
                       />
                       <span className="form-check-label">Admin</span>
                     </label>
 
                     <label className="form-check">
                       <input
-                        type="checkbox"
+                        type="radio"
                         className="form-check-input"
-                        checked={!!edit?.roles.READER}
-                        onChange={(e) =>
+                        checked={edit?.role === "READER"}
+                        onChange={() =>
                           setEdit((s) =>
                             s
                               ? {
                                   ...s,
-                                  roles: { ...s.roles, READER: e.target.checked },
+                                  role: "READER",
                                 }
                               : s
                           )
                         }
+                        name="edit-role"
                       />
                       <span className="form-check-label">Reader</span>
                     </label>
                   </div>
-                  {editErrors.roles && (
+                  {editErrors.role && (
                     <div className="invalid-feedback d-block">
-                      {editErrors.roles}
+                      {editErrors.role}
                     </div>
                   )}
                 </>
@@ -774,6 +798,106 @@ export default function UsersPage() {
                       ? "Locked"
                       : "Active"}
                   </span>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <div className="text-muted small">Two-factor authentication</div>
+              <div className="d-flex gap-2 align-items-center mt-1 mb-2">
+                {renderTwoFactor(selected.twoFactorEnabled)}
+                <span className="small text-muted">
+                  {selected.twoFactorEnabled ? "Enabled" : "Not enabled"}
+                </span>
+              </div>
+
+              {!isSelectedCurrentUser && (
+                <div className="small text-muted">
+                  2FA setup can only be managed by the logged-in account owner.
+                </div>
+              )}
+
+              {isSelectedCurrentUser && !selected.twoFactorEnabled && (
+                <div className="d-flex flex-column gap-2">
+                  {!twoFactorSetup && (
+                    <button
+                      className="btn btn-outline-primary btn-sm align-self-start"
+                      onClick={handleStartTwoFactorSetup}
+                      disabled={actionBusy === `${selected.id}:2fa-setup`}
+                    >
+                      {actionBusy === `${selected.id}:2fa-setup`
+                        ? "Preparing..."
+                        : "Set up 2FA"}
+                    </button>
+                  )}
+
+                  {twoFactorSetup && (
+                    <>
+                      <img
+                        src={twoFactorSetup.qrCodeDataUri}
+                        alt="2FA QR code"
+                        width={180}
+                        height={180}
+                        className="border rounded"
+                      />
+                      <input
+                        className="form-control form-control-sm"
+                        placeholder="Enter 6-digit code"
+                        value={twoFactorCode}
+                        onChange={(e) => setTwoFactorCode(e.target.value)}
+                        inputMode="numeric"
+                        maxLength={6}
+                      />
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={handleEnableTwoFactor}
+                          disabled={
+                            actionBusy === `${selected.id}:2fa-enable` ||
+                            twoFactorCode.trim().length !== 6
+                          }
+                        >
+                          {actionBusy === `${selected.id}:2fa-enable`
+                            ? "Enabling..."
+                            : "Enable 2FA"}
+                        </button>
+                        <button
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={() => {
+                            setTwoFactorSetup(null);
+                            setTwoFactorCode("");
+                          }}
+                        >
+                          Cancel setup
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {isSelectedCurrentUser && selected.twoFactorEnabled && (
+                <div className="d-flex flex-column gap-2">
+                  <input
+                    className="form-control form-control-sm"
+                    placeholder="Enter current 6-digit code to disable"
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                    inputMode="numeric"
+                    maxLength={6}
+                  />
+                  <button
+                    className="btn btn-outline-danger btn-sm align-self-start"
+                    onClick={handleDisableTwoFactor}
+                    disabled={
+                      actionBusy === `${selected.id}:2fa-disable` ||
+                      twoFactorCode.trim().length !== 6
+                    }
+                  >
+                    {actionBusy === `${selected.id}:2fa-disable`
+                      ? "Disabling..."
+                      : "Disable 2FA"}
+                  </button>
                 </div>
               )}
             </div>

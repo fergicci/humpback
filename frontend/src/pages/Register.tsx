@@ -9,6 +9,9 @@ type RegisterFormState = RegisterRequest & {
   confirmPassword: string;
 };
 
+const USERNAME_PATTERN = "^[a-z0-9][a-z0-9._-]{2,31}$";
+const PASSWORD_PATTERN = "^(?=\\S+$)(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{12,64}$";
+
 export default function Register() {
   const lang = useMemo(() => navigator.language || "en", []);
 
@@ -27,8 +30,9 @@ export default function Register() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const nextValue = name === "username" ? value.toLowerCase() : value;
 
-    setFormData((s) => ({ ...s, [name]: value }));
+    setFormData((s) => ({ ...s, [name]: nextValue }));
 
     setErrors((prev) => {
       if (!prev[name]) return prev;
@@ -137,8 +141,15 @@ export default function Register() {
                     isInvalid={!!errors.username}
                     isValid={wasValidated && !errors.username && formData.username.length > 0}
                     autoComplete="username"
+                    pattern={USERNAME_PATTERN}
+                    minLength={3}
+                    maxLength={32}
+                    inputMode="text"
                     autoFocus
                   />
+                  <Form.Text className="text-muted">
+                    3-32 chars: lowercase letters, numbers, dot, underscore, hyphen.
+                  </Form.Text>
                   <Form.Control.Feedback type="invalid">
                     {errors.username}
                   </Form.Control.Feedback>
@@ -184,7 +195,13 @@ export default function Register() {
                     isInvalid={!!errors.password}
                     isValid={wasValidated && !errors.password && formData.password.length > 0}
                     autoComplete="new-password"
+                    pattern={PASSWORD_PATTERN}
+                    minLength={12}
+                    maxLength={64}
                   />
+                  <Form.Text className="text-muted">
+                    12-64 chars, including uppercase, lowercase, number, special character, and no spaces.
+                  </Form.Text>
                   <Form.Control.Feedback type="invalid">
                     {errors.password}
                   </Form.Control.Feedback>
@@ -204,6 +221,9 @@ export default function Register() {
                       formData.confirmPassword.length > 0
                     }
                     autoComplete="new-password"
+                    pattern={PASSWORD_PATTERN}
+                    minLength={12}
+                    maxLength={64}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.confirmPassword}

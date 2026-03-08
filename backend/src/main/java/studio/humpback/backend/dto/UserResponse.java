@@ -31,5 +31,8 @@ public class UserResponse {
 
     private Boolean accountLocked;
     private Boolean disabled;
+    private Boolean twoFactorEnabled;
+    private Boolean requiresTwoFactor;
+    private String twoFactorChallengeToken;
     private String token;
 }
