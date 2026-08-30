@@ -1,9 +1,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans:wght@300;400;600&display=swap");
 
+// ─── Brand tokens ─────────────────────────────────────────────────────────────
+:root {
+  --hs-dark:          #0f1014;
+  --hs-accent:        #e8a020;
+  --hs-accent-hover:  #f5b535;
+}
+
+// ─── Base ─────────────────────────────────────────────────────────────────────
 body {
   font-family: "Open Sans", sans-serif;
   font-weight: 400;
-  color: #222;
+  color: #1a1d24;
+  line-height: 1.7;
 }
 
 h1,
@@ -23,16 +32,195 @@ h3,
   height: auto;
 }
 
+// ─── Navbar ───────────────────────────────────────────────────────────────────
+.hs-navbar {
+  background-color: var(--hs-dark) !important;
+  border-bottom: 1px solid rgba(232, 160, 32, 0.25);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+
+  .navbar-brand {
+    color: #fff;
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    transition: color 0.15s ease;
+
+    &:hover { color: var(--hs-accent); }
+  }
+
+  .nav-link {
+    color: rgba(255, 255, 255, 0.72) !important;
+    transition: color 0.15s ease;
+    padding-inline: 0.9rem !important;
+
+    &:hover,
+    &.active {
+      color: var(--hs-accent) !important;
+    }
+  }
+
+  .form-select-sm {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.85);
+
+    option {
+      background-color: var(--hs-dark);
+      color: #fff;
+    }
+  }
+}
+
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+.hs-hero {
+  background: linear-gradient(160deg, #0f1014 0%, #1b1f28 60%, #111318 100%);
+  padding: 5rem 1rem 4.5rem;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% -10%, rgba(232, 160, 32, 0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow: 0 2px 28px rgba(0, 0, 0, 0.5);
+    position: relative;
+    margin-bottom: 0.5rem;
+  }
+
+  .lead {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    position: relative;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+.hs-footer {
+  background-color: var(--hs-dark) !important;
+  border-top: 1px solid rgba(232, 160, 32, 0.2);
+  color: rgba(255, 255, 255, 0.55);
+
+  p { margin: 0; }
+}
+
+// ─── Highlight cards ─────────────────────────────────────────────────────────
+.highlight-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+
+  .highlight-card-img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.35s ease;
+  }
+
+  .card-img-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .highlight-card-title {
+    background: rgba(0, 0, 0, 0.58);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 0.65rem 1rem;
+    color: #fff;
+    width: 100%;
+    font-family: "Bebas Neue", sans-serif;
+    letter-spacing: 2px;
+    font-size: 1.05rem;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+
+    .highlight-card-img {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// ─── Cards (public) ───────────────────────────────────────────────────────────
+.card:not(.highlight-card) {
+  border-radius: 12px;
+  border-color: rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
+
+  .card-header.bg-dark {
+    background-color: var(--hs-dark) !important;
+    border-bottom: 1px solid rgba(232, 160, 32, 0.2);
+  }
+}
+
+// ─── Bootstrap overrides ─────────────────────────────────────────────────────
+
+// Primary button → amber accent (using Bootstrap 5 CSS vars)
+.btn-primary {
+  --bs-btn-bg:                var(--hs-accent);
+  --bs-btn-border-color:      var(--hs-accent);
+  --bs-btn-color:             #0f1014;
+  --bs-btn-hover-bg:          var(--hs-accent-hover);
+  --bs-btn-hover-border-color:var(--hs-accent-hover);
+  --bs-btn-hover-color:       #0f1014;
+  --bs-btn-active-bg:         #d4901a;
+  --bs-btn-active-border-color: #d4901a;
+  --bs-btn-active-color:      #0f1014;
+  --bs-btn-focus-shadow-rgb:  232, 160, 32;
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 1px;
+  font-size: 1rem;
+}
+
+// Form inputs — accent focus ring
+.form-control,
+.form-select:not(.form-select-sm) {
+  border-radius: 8px;
+
+  &:focus {
+    border-color: var(--hs-accent);
+    box-shadow: 0 0 0 0.25rem rgba(232, 160, 32, 0.2);
+  }
+}
+
+// Modal header dark
+.modal-header.bg-dark {
+  background-color: var(--hs-dark) !important;
+  border-bottom: 1px solid rgba(232, 160, 32, 0.2);
+}
+
+.modal-header .btn-close {
+  filter: invert(1);
+}
+
+// ─── 404 page ─────────────────────────────────────────────────────────────────
 @keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
-  100% {
-    opacity: 1;
-  }
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
 }
 
 .not-found-container {
@@ -81,55 +269,12 @@ h3,
 
   @media (max-width: 576px) {
     padding: 1.5rem;
-    h1 {
-      font-size: 2.5rem;
-    }
-    p {
-      font-size: 1rem;
-    }
+    h1 { font-size: 2.5rem; }
+    p  { font-size: 1rem; }
   }
 }
 
-.highlight-card {
-  border: none;
-  overflow: hidden;
-  position: relative;
-
-  .highlight-card-img {
-    object-fit: contain;
-    width: 100%;
-    height: 100%;
-  }
-
-  .card-img-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-  }
-
-  .highlight-card-title {
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 0.75rem;
-    color: white;
-  }
-
-  &:hover {
-    transform: scale(1.02);
-    transition: transform 0.2s ease-in-out;
-    cursor: pointer;
-  }
-}
-
-.modal-header .btn-close {
-  filter: invert(1);
-}
-
-
+// ─── Admin contacts ───────────────────────────────────────────────────────────
 .contacts-admin {
 
   .text-warning { color: #8c6000 !important; }
@@ -142,7 +287,6 @@ h3,
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     border-width: 1px;
     border-color: #343a40 !important;
   }
