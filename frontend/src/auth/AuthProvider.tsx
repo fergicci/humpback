@@ -1,7 +1,10 @@
 import {
   ensureSession,
+  fetchMe,
+  loginWithTwoFactor,
   login,
   logout,
+  type LoginResult,
   type User,
 } from "@/services/authService";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -13,7 +16,13 @@ const USER_STORAGE_KEY = "hb_user";
 type AuthContext = {
   user: User | null;
   ready: boolean;
-  signin: (u: string, p: string, remember: boolean) => Promise<void>;
+  signin: (u: string, p: string, remember: boolean) => Promise<LoginResult>;
+  completeTwoFactorSignin: (
+    challengeToken: string,
+    code: string,
+    remember: boolean
+  ) => Promise<void>;
+  refreshUser: () => Promise<User | null>;
   signout: () => Promise<void>;
 };
 
@@ -62,12 +71,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         ready,
         signin: async (u, p, remember?: boolean) => {
-          const me = await login(u, p, remember);
+          const result = await login(u, p, remember);
+          if (result.status === "authenticated") {
+            setUser(result.user);
+            localStorage.setItem(
+              AUTH_EVENT_KEY,
+              JSON.stringify({ type: "login", ts: Date.now() })
+            );
+          }
+          return result;
+        },
+        completeTwoFactorSignin: async (challengeToken, code, remember) => {
+          const me = await loginWithTwoFactor(challengeToken, code, remember);
           setUser(me);
           localStorage.setItem(
             AUTH_EVENT_KEY,
             JSON.stringify({ type: "login", ts: Date.now() })
           );
+        },
+        refreshUser: async () => {
+          const me = await fetchMe();
+          setUser(me);
+          return me;
         },
         signout: async () => {
           await logout();

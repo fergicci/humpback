@@ -21,6 +21,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private static final String API_AUTH_LOGIN = "/api/v1/auth/login";
+    private static final String API_AUTH_LOGIN_2FA = "/api/v1/auth/login/2fa";
+    private static final String API_AUTH_FORGOT_PASSWORD_REQUEST = "/api/v1/auth/forgot-password/request";
+    private static final String API_AUTH_FORGOT_PASSWORD_RESET = "/api/v1/auth/forgot-password/reset";
+    private static final String API_AUTH_CHANGE_PASSWORD = "/api/v1/auth/change-password";
     private static final String API_AUTH_REGISTER = "/api/v1/auth/register";
     private static final String API_CONTACTS = "/api/v1/contacts";
     private static final String API_BOOKINGS = "/api/v1/bookings";
@@ -54,6 +58,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, API_AUTH_LOGIN).permitAll()
+                        .requestMatchers(HttpMethod.POST, API_AUTH_LOGIN_2FA).permitAll()
+                        .requestMatchers(HttpMethod.POST, API_AUTH_FORGOT_PASSWORD_REQUEST).permitAll()
+                        .requestMatchers(HttpMethod.POST, API_AUTH_FORGOT_PASSWORD_RESET).permitAll()
+                        .requestMatchers(HttpMethod.POST, API_AUTH_CHANGE_PASSWORD).permitAll()
                         .requestMatchers(HttpMethod.POST, API_AUTH_REGISTER).permitAll()
                         .requestMatchers(HttpMethod.POST, API_CONTACTS).permitAll()
                         .requestMatchers(HttpMethod.POST, API_BOOKINGS).permitAll()

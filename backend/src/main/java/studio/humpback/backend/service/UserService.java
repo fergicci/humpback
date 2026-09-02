@@ -2,6 +2,7 @@ package studio.humpback.backend.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public class UserService {
     private static final String LOCKED = "locked";
     private static final String DISABLED = "disabled";
     private static final String ENABLED = "enabled";
+    private static final String ROLE_MUST_BE_SINGLE = "User must have exactly one role";
 
     @Value("${security.user-accounts.password-expiration-days:90}")
     private Integer passwordExpirationDays;
@@ -45,17 +47,20 @@ public class UserService {
         return userRepository.findAll(pageable);
     }
 
-    public User update(String id, String fullname, String email, Instant passwordExpiredAt,
+    public User update(String id, String fullname, String email,
             boolean disabled, boolean accountLocked, Set<String> roles) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(USER_NOT_FOUND, id)));
 
+        Set<String> normalizedRoles = Optional.ofNullable(roles)
+                .filter(value -> value.size() == 1)
+                .orElseThrow(() -> new IllegalArgumentException(ROLE_MUST_BE_SINGLE));
+
         user.setFullname(fullname);
         user.setEmail(email);
-        user.setPasswordExpiredAt(passwordExpiredAt);
         user.setDisabled(disabled);
         user.setAccountLocked(accountLocked);
-        user.setRoles(roles.stream().map(UserRole::valueOf).collect(Collectors.toSet()));
+        user.setRoles(normalizedRoles.stream().map(UserRole::valueOf).collect(Collectors.toSet()));
 
         return userRepository.save(user);
     }
@@ -70,23 +75,31 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(USER_NOT_FOUND, id)));
 
-        user.setDisabled(desiredDisable);
+        Boolean normalizedDesiredDisable = Optional.ofNullable(desiredDisable).orElse(Boolean.FALSE);
+        user.setDisabled(normalizedDesiredDisable);
         userRepository.save(user);
 
-        logger.info(String.format(USED_DISABLED, id, desiredDisable ? DISABLED : ENABLED));
+        logger.info(String.format(USED_DISABLED, id, normalizedDesiredDisable ? DISABLED : ENABLED));
     }
 
     public void lock(String id, Boolean desiredLock) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(USER_NOT_FOUND, id)));
 
-        user.setAccountLocked(desiredLock);
-        
-        if (user.getPasswordExpiredAt().isBefore(Instant.now()))
-            user.setPasswordExpiredAt(Instant.now().plus(passwordExpirationDays, ChronoUnit.DAYS));
+        Boolean normalizedDesiredLock = Optional.ofNullable(desiredLock).orElse(Boolean.FALSE);
+        user.setAccountLocked(normalizedDesiredLock);
+
+        Instant now = Instant.now();
+        boolean isPasswordExpired = Optional.ofNullable(user.getPasswordExpiredAt())
+                .map(expiration -> expiration.isBefore(now))
+                .orElse(Boolean.TRUE);
+        if (isPasswordExpired) {
+            int expirationDays = Optional.ofNullable(passwordExpirationDays).orElse(90);
+            user.setPasswordExpiredAt(now.plus(expirationDays, ChronoUnit.DAYS));
+        }
 
         userRepository.save(user);
 
-        logger.info(String.format(USER_LOCKED, id, desiredLock ? LOCKED : UNLOCKED));
+        logger.info(String.format(USER_LOCKED, id, normalizedDesiredLock ? LOCKED : UNLOCKED));
     }
 }

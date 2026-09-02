@@ -1,7 +1,7 @@
 package studio.humpback.backend.model;
 
 import java.time.Instant;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -27,7 +27,7 @@ public class User {
     private String password;
 
     @Builder.Default
-    private Set<String> olderPasswords = Collections.emptySet();
+    private Set<String> olderPasswords = new HashSet<>();
 
     private Set<UserRole> roles;
     private String fullname;
@@ -44,6 +44,10 @@ public class User {
 
     @Builder.Default
     private Boolean disabled = false;
+
+    @Builder.Default
+    private Boolean twoFactorEnabled = false;
+    private String twoFactorSecret;
 
     public Boolean isPasswordExpired() {
         return Optional.ofNullable(this.passwordExpiredAt)

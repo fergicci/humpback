@@ -29,6 +29,11 @@
     &.has-bookings {
       background: rgba(var(--cui-primary-rgb), 0.08);
     }
+
+    &.is-past {
+      background: rgba(108, 117, 125, 0.16);
+      color: rgba(33, 37, 41, 0.72);
+    }
   }
 
   .day-number {
@@ -47,5 +52,9 @@
     font-weight: 600;
     padding: 0.2rem 0.45rem;
     border-radius: 999px;
+  }
+
+  .calendar-cell.is-past .booking-count {
+    background: #6c757d;
   }
 }

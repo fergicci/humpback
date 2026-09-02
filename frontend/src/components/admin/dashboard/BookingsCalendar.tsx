@@ -12,6 +12,12 @@ export default function BookingsCalendar({
   month,
   bookings,
 }: Props) {
+  const todayStart = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }, []);
+
   const days = useMemo(() => {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
@@ -48,11 +54,12 @@ export default function BookingsCalendar({
 
           const key = date.toISOString().slice(0, 10);
           const count = bookings[key] ?? 0;
+          const isPast = date < todayStart;
 
           return (
             <div
               key={i}
-              className={`calendar-cell ${count > 0 ? "has-bookings" : ""}`}
+              className={`calendar-cell ${count > 0 ? "has-bookings" : ""} ${isPast ? "is-past" : ""}`}
             >
               <div className="day-number">{date.getDate()}</div>
               {count > 0 && (

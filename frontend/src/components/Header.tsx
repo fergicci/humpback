@@ -12,7 +12,7 @@ function Header() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+    <nav className="navbar navbar-expand-lg navbar-dark hs-navbar px-4">
       <NavLink className="navbar-brand" to="/">
         Humpback Studio
       </NavLink>

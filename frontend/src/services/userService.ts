@@ -12,13 +12,13 @@ export interface UserItem {
   passwordExpiredAt: string;
   disabled: boolean;
   accountLocked: boolean;
+  twoFactorEnabled: boolean;
   roles: string[];
 }
 
 export interface UserRequest {
   fullname: string;
   email: string;
-  passwordExpiredAt: string | null;
   disabled: boolean;
   accountLocked: boolean;
   roles: string[];

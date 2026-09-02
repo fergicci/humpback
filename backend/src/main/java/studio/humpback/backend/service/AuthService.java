@@ -3,7 +3,11 @@ package studio.humpback.backend.service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -19,6 +23,7 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import studio.humpback.backend.dto.RegisterRequest;
+import studio.humpback.backend.exception.PasswordChangeRequiredException;
 import studio.humpback.backend.exception.PasswordExpiredException;
 import studio.humpback.backend.exception.ResourceNotFoundException;
 import studio.humpback.backend.exception.UserAccountLockedException;
@@ -36,8 +41,27 @@ public class AuthService implements UserDetailsService {
     private static final String USER_DISABLED = "User disabled";
     private static final String INVALID_PASSWORD = "Invalid password";
     private static final String EXPIRED_PASSWORD = "Expired password";
+    private static final String PASSWORD_CHANGE_REQUIRED = "Password change required";
     private static final String USER_ACCOUNT_LOCKED = "User Account Locked";
     private static final String USERNAME_ALREADY_EXISTS = "Username already exists";
+    private static final String USERNAME_REQUIRED = "Username is required";
+    private static final String USERNAME_POLICY_INVALID = "Username policy invalid";
+    private static final String USERNAME_RESERVED = "Username is reserved";
+    private static final String NEW_PASSWORD_REQUIRED = "New password is required";
+    private static final String NEW_PASSWORD_LENGTH_INVALID = "New password must be between 12 and 64 characters";
+    private static final String NEW_PASSWORD_POLICY_INVALID =
+            "Password must contain uppercase, lowercase, number, and special character, with no spaces";
+    private static final String NEW_PASSWORD_MUST_DIFFERENT = "New password must be different from current password";
+    private static final String NEW_PASSWORD_PREVIOUSLY_USED = "New password was previously used";
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-z0-9][a-z0-9._-]{2,31}$");
+    private static final Pattern PASSWORD_UPPERCASE_PATTERN = Pattern.compile(".*[A-Z].*");
+    private static final Pattern PASSWORD_LOWERCASE_PATTERN = Pattern.compile(".*[a-z].*");
+    private static final Pattern PASSWORD_DIGIT_PATTERN = Pattern.compile(".*\\d.*");
+    private static final Pattern PASSWORD_SPECIAL_PATTERN = Pattern.compile(".*[^A-Za-z0-9].*");
+    private static final int PASSWORD_MIN_LENGTH = 12;
+    private static final int PASSWORD_MAX_LENGTH = 64;
+    private static final Set<String> RESERVED_USERNAMES = Set.of(
+            "admin", "administrator", "root", "system", "support", "api", "security");
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -60,6 +84,9 @@ public class AuthService implements UserDetailsService {
     @Value("${security.user-accounts.password-expiration-days:90}")
     private Integer passwordExpirationDays;
 
+    @Value("${security.user-accounts.password-change-threshold-days:5}")
+    private Integer passwordChangeThresholdDays;
+
     @PostConstruct
     public void createSysadminIfNeeded() {
         Boolean adminExists = userRepository.findAll().stream()
@@ -71,7 +98,7 @@ public class AuthService implements UserDetailsService {
         }
 
         User sysadmin = User.builder()
-                .username(sysadminUsername)
+                .username(normalizeUsername(sysadminUsername))
                 .fullname(sysadminFullname)
                 .email(sysadminEmail)
                 .password(passwordEncoder.encode(sysadminPassword))
@@ -83,6 +110,7 @@ public class AuthService implements UserDetailsService {
                 .passwordExpiredAt(Instant.now()
                         .plus(passwordExpirationDays, ChronoUnit.DAYS))
                 .disabled(Boolean.FALSE)
+                .twoFactorEnabled(Boolean.FALSE)
                 .build();
 
         userRepository.save(sysadmin);
@@ -91,7 +119,8 @@ public class AuthService implements UserDetailsService {
     }
 
     public User authenticate(String username, String rawPassword) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
+        String normalizedUsername = normalizeUsername(username);
+        Optional<User> userOptional = userRepository.findByUsernameIgnoreCase(normalizedUsername);
 
         if (userOptional.isEmpty()) {
             throw new ResourceNotFoundException(USER_NOT_FOUND);
@@ -116,14 +145,23 @@ public class AuthService implements UserDetailsService {
 
         validatePassword(rawPassword, user);
 
-        user.setLastLogin(Instant.now());
-        userRepository.save(user);
+        if (isPasswordChangeRequired(user)) {
+            logger.info("[AUTH] Password change required for user '{}'. Expiration near threshold.", user.getUsername());
+            throw new PasswordChangeRequiredException(PASSWORD_CHANGE_REQUIRED);
+        }
 
         return user;
     }
 
+    public User completeSuccessfulLogin(User user) {
+        user.setLastLogin(Instant.now());
+        user.setNumberOfFailedAttempts(0);
+        return userRepository.save(user);
+    }
+
     public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
+        String normalizedUsername = normalizeUsername(username);
+        return userRepository.findByUsernameIgnoreCase(normalizedUsername)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
     }
 
@@ -160,17 +198,18 @@ public class AuthService implements UserDetailsService {
     }
 
     public void registerUser(RegisterRequest registerRequest) {
-        Optional<User> existingUser = userRepository.findByUsername(registerRequest.getUsername());
+        String normalizedUsername = normalizeAndValidateUsername(registerRequest.getUsername(), true);
+        Optional<User> existingUser = userRepository.findByUsernameIgnoreCase(normalizedUsername);
 
         if (existingUser.isPresent()) {
             throw new IllegalArgumentException(USERNAME_ALREADY_EXISTS);
         }
 
         User newUser = User.builder()
-                .username(registerRequest.getUsername())
+                .username(normalizedUsername)
                 .fullname(registerRequest.getFullname())
                 .email(registerRequest.getEmail())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .password(passwordEncoder.encode(validateAndNormalizeNewPassword(registerRequest.getPassword())))
                 .roles(Collections
                         .singletonList(UserRole.READER)
                         .stream()
@@ -178,9 +217,112 @@ public class AuthService implements UserDetailsService {
                 .createdAt(Instant.now())
                 .passwordExpiredAt(Instant.now().plus(passwordExpirationDays, ChronoUnit.DAYS))
                 .disabled(Boolean.TRUE)
+                .twoFactorEnabled(Boolean.FALSE)
                 .build();
 
         userRepository.save(newUser);
+    }
+
+    public void resetPassword(User user, String newPassword) {
+        applyNewPassword(user, newPassword);
+    }
+
+    public void changePassword(String username, String oldPassword, String newPassword) {
+        User user = getUserByUsername(username);
+
+        if (Boolean.TRUE.equals(user.getDisabled())) {
+            throw new UserAccountLockedException(USER_DISABLED);
+        }
+
+        if (Boolean.TRUE.equals(user.getAccountLocked()) && !Boolean.TRUE.equals(user.isPasswordExpired())) {
+            throw new UserAccountLockedException(USER_ACCOUNT_LOCKED);
+        }
+
+        validatePassword(oldPassword, user);
+        applyNewPassword(user, newPassword);
+    }
+
+    private String normalizeUsername(String username) {
+        return Optional.ofNullable(username)
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(value -> value.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
+    }
+
+    private String normalizeAndValidateUsername(String username, boolean checkReserved) {
+        String normalized = Optional.ofNullable(username)
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(value -> value.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new IllegalArgumentException(USERNAME_REQUIRED));
+
+        if (!USERNAME_PATTERN.matcher(normalized).matches()) {
+            throw new IllegalArgumentException(USERNAME_POLICY_INVALID);
+        }
+
+        if (checkReserved && RESERVED_USERNAMES.contains(normalized)) {
+            throw new IllegalArgumentException(USERNAME_RESERVED);
+        }
+
+        return normalized;
+    }
+
+    private String validateAndNormalizeNewPassword(String password) {
+        String normalizedPassword = Optional.ofNullable(password)
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .orElseThrow(() -> new IllegalArgumentException(NEW_PASSWORD_REQUIRED));
+
+        if (normalizedPassword.length() < PASSWORD_MIN_LENGTH || normalizedPassword.length() > PASSWORD_MAX_LENGTH) {
+            throw new IllegalArgumentException(NEW_PASSWORD_LENGTH_INVALID);
+        }
+
+        boolean hasUppercase = PASSWORD_UPPERCASE_PATTERN.matcher(normalizedPassword).matches();
+        boolean hasLowercase = PASSWORD_LOWERCASE_PATTERN.matcher(normalizedPassword).matches();
+        boolean hasDigit = PASSWORD_DIGIT_PATTERN.matcher(normalizedPassword).matches();
+        boolean hasSpecial = PASSWORD_SPECIAL_PATTERN.matcher(normalizedPassword).matches();
+        boolean hasWhitespace = normalizedPassword.chars().anyMatch(Character::isWhitespace);
+
+        if (!hasUppercase || !hasLowercase || !hasDigit || !hasSpecial || hasWhitespace) {
+            throw new IllegalArgumentException(NEW_PASSWORD_POLICY_INVALID);
+        }
+
+        return normalizedPassword;
+    }
+
+    private boolean isPasswordChangeRequired(User user) {
+        Instant thresholdDate = Instant.now().plus(passwordChangeThresholdDays, ChronoUnit.DAYS);
+        return Optional.ofNullable(user.getPasswordExpiredAt())
+                .map(expiration -> !expiration.isAfter(thresholdDate))
+                .orElse(true);
+    }
+
+    private void applyNewPassword(User user, String newPassword) {
+        String normalizedPassword = validateAndNormalizeNewPassword(newPassword);
+
+        if (passwordEncoder.matches(normalizedPassword, user.getPassword())) {
+            throw new IllegalArgumentException(NEW_PASSWORD_MUST_DIFFERENT);
+        }
+
+        boolean passwordUsedBefore = Optional.ofNullable(user.getOlderPasswords())
+                .orElseGet(Set::of)
+                .stream()
+                .anyMatch(oldPasswordHash -> passwordEncoder.matches(normalizedPassword, oldPasswordHash));
+        if (passwordUsedBefore) {
+            throw new IllegalArgumentException(NEW_PASSWORD_PREVIOUSLY_USED);
+        }
+
+        Set<String> olderPasswords = Optional.ofNullable(user.getOlderPasswords())
+                .map(HashSet::new)
+                .orElseGet(HashSet::new);
+        olderPasswords.add(user.getPassword());
+        user.setOlderPasswords(olderPasswords);
+        user.setPassword(passwordEncoder.encode(normalizedPassword));
+        user.setPasswordExpiredAt(Instant.now().plus(passwordExpirationDays, ChronoUnit.DAYS));
+        user.setAccountLocked(Boolean.FALSE);
+        user.setNumberOfFailedAttempts(0);
+        userRepository.save(user);
     }
 
 }
